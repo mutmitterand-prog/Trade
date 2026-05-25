@@ -1,0 +1,18 @@
+{
+  "name": "FKM ENERGY Terminal",
+  "short_name": "FKM Terminal",
+  "description": "Terminal de trading et calcul de lotage pour scalping M1",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0b0e11",
+  "theme-color": "#0b0e11",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2422/2422796.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
