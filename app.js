@@ -2,10 +2,7 @@ const STORAGE_KEY = "fkm_trades_v22";
 
 let equityChart;
 
-/* =========================
-   STORAGE
-========================= */
-
+/* STORAGE */
 function getTrades() {
     return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 }
@@ -14,143 +11,102 @@ function saveTrades(trades) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(trades));
 }
 
-/* =========================
-   CONTROLES TRADING
-========================= */
+/* CHECKLIST */
+function checkChecklist() {
+    const checks = document.querySelectorAll(".t-check");
+    let score = 0;
+    checks.forEach(c => c.checked && score++);
+    return score;
+}
 
+function updateChecklistUI() {
+    const score = checkChecklist();
+    const el = document.getElementById("check-status");
+    el.innerText = `${score}/4`;
+    el.style.color = score >= 3 ? "#00FF00" : "#FF0000";
+}
+
+/* SESSION */
 function checkSession() {
+    const s = document.getElementById("session-select").value;
+    const h = new Date().getHours();
 
-    const session = document.getElementById("session-select")?.value;
-    const hour = new Date().getHours();
-
-    if (!session || session === "all") return true;
-
-    if (session === "morning" && hour >= 9 && hour <= 12) return true;
-
-    if (session === "evening" && hour >= 15 && hour <= 18) return true;
+    if (s === "all") return true;
+    if (s === "morning") return h >= 8 && h <= 12;
+    if (s === "evening") return h >= 15 && h <= 20;
 
     return false;
 }
 
+/* ATR */
 function checkATR() {
-
-    const atr = parseFloat(document.getElementById("atr-input")?.value);
-    const status = document.getElementById("atr-status");
+    const atr = parseFloat(document.getElementById("atr-input").value);
+    const el = document.getElementById("atr-status");
 
     if (!atr || isNaN(atr)) {
-
-        status.innerText = "ATR non défini";
-        status.style.color = "#FFA500";
-
+        el.innerText = "ATR ?";
+        el.style.color = "orange";
         return false;
     }
 
     if (atr >= 1) {
-
-        status.innerText = "Volatilité OK";
-        status.style.color = "#00FF00";
-
+        el.innerText = "OK";
+        el.style.color = "lime";
         return true;
     }
 
-    status.innerText = "Volatilité faible";
-    status.style.color = "#FF0000";
-
+    el.innerText = "FAIBLE";
+    el.style.color = "red";
     return false;
 }
 
-function updateStatus() {
-
-    const status = document.getElementById("trading-status");
-
-    const ok = checkSession() && checkATR();
-
-    status.innerText = ok ? "TRADING OK" : "TRADING BLOQUÉ";
-    status.style.color = ok ? "#00FF00" : "#FF0000";
-}
-
-/* =========================
-   ADD TRADE
-========================= */
-
+/* ADD TRADE */
 function addTrade() {
 
-    if (!checkSession()) {
-        alert("Hors session trading");
-        return;
-    }
+    if (checkChecklist() < 3) return alert("Checklist insuffisante");
+    if (!checkSession()) return alert("Hors session");
+    if (!checkATR()) return alert("ATR faible");
 
-    if (!checkATR()) {
-        alert("ATR trop faible");
-        return;
-    }
-
-    const pnlInput = document.getElementById("j-pnl").value;
-
-    if (!pnlInput) return;
-
-    const pnl = parseFloat(pnlInput);
+    const pnl = parseFloat(document.getElementById("j-pnl").value);
+    if (isNaN(pnl)) return;
 
     const trades = getTrades();
 
-    const trade = {
-
+    trades.push({
         id: Date.now(),
         timestamp: Date.now(),
-
-        market: document.getElementById("j-market").value,
-        result: document.getElementById("j-result").value,
-
-        pnl: document.getElementById("j-result").value === "Perte"
-            ? -Math.abs(pnl)
-            : Math.abs(pnl),
-
+        market: j-market.value,
+        result: j-result.value,
+        pnl: j-result.value === "Perte" ? -Math.abs(pnl) : Math.abs(pnl),
         note: document.getElementById("j-note").value
-    };
-
-    trades.push(trade);
+    });
 
     saveTrades(trades);
-
     render();
 }
 
-/* =========================
-   DELETE
-========================= */
-
+/* DELETE */
 function deleteTrade(id) {
-
-    const trades = getTrades().filter(t => t.id !== id);
-
-    saveTrades(trades);
-
+    saveTrades(getTrades().filter(t => t.id !== id));
     render();
 }
 
-/* =========================
-   RENDER
-========================= */
-
+/* RENDER */
 function render() {
-
     const trades = getTrades();
 
     renderTable(trades);
     renderStats(trades);
     renderChart(trades);
-    analyzeAI(trades);
-    updateStatus();
+
+    updateChecklistUI();
+    updateAI(trades);
 }
 
-/* =========================
-   TABLE
-========================= */
-
+/* TABLE */
 function renderTable(trades) {
 
     const body = document.getElementById("journal-body");
-
     body.innerHTML = "";
 
     trades.slice().reverse().forEach(t => {
@@ -161,7 +117,7 @@ function renderTable(trades) {
             <td>${new Date(t.timestamp).toLocaleString()}</td>
             <td>${t.market}</td>
             <td>${t.result}</td>
-            <td class="${t.pnl >= 0 ? "val-gain" : "val-perte"}">${t.pnl.toFixed(2)} $</td>
+            <td>${t.pnl.toFixed(2)}</td>
             <td>${t.note}</td>
             <td><button onclick="deleteTrade(${t.id})">X</button></td>
         `;
@@ -170,108 +126,46 @@ function renderTable(trades) {
     });
 }
 
-/* =========================
-   STATS
-========================= */
-
+/* STATS */
 function renderStats(trades) {
 
-    let total = 0;
-    let wins = 0;
-
-    let balance = 100;
-    let peak = 100;
-    let drawdown = 0;
+    let total = 0, wins = 0;
 
     trades.forEach(t => {
-
         total += t.pnl;
-        balance += t.pnl;
-
         if (t.pnl > 0) wins++;
-
-        if (balance > peak) peak = balance;
-
-        let dd = peak - balance;
-
-        if (dd > drawdown) drawdown = dd;
     });
 
-    const winrate = trades.length
-        ? (wins / trades.length) * 100
-        : 0;
+    const winrate = trades.length ? (wins / trades.length) * 100 : 0;
 
     document.getElementById("pnl-day").innerText = total.toFixed(2);
-    document.getElementById("pnl-week").innerText = total.toFixed(2);
-    document.getElementById("pnl-month").innerText = total.toFixed(2);
-    document.getElementById("pnl-year").innerText = total.toFixed(2);
-
-    document.getElementById("winrate").innerText = winrate.toFixed(1) + "%";
+    document.getElementById("winrate").innerText = winrate.toFixed(1);
     document.getElementById("total-trades").innerText = trades.length;
-    document.getElementById("drawdown").innerText = drawdown.toFixed(2);
 }
 
-/* =========================
-   CHART
-========================= */
-
-function renderChart(trades) {
-
-    const ctx = document.getElementById("equityChart");
-
-    let cap = 100;
-
-    const data = [];
-
-    trades.forEach(t => {
-        cap += t.pnl;
-        data.push(cap);
-    });
-
-    if (equityChart) equityChart.destroy();
-
-    equityChart = new Chart(ctx, {
-        type: "line",
-        data: {
-            labels: data.map((_, i) => i + 1),
-            datasets: [{
-                label: "Equity",
-                data
-            }]
-        }
-    });
-}
-
-/* =========================
-   AI ANALYSIS
-========================= */
-
-function analyzeAI(trades) {
+/* AI */
+function updateAI(trades) {
 
     if (trades.length < 3) return;
 
-    let total = 0;
-    let wins = 0;
-
-    let marketStats = {};
-    let noteStats = {};
+    let total = 0, wins = 0;
 
     trades.forEach(t => {
-
         total += t.pnl;
-
         if (t.pnl > 0) wins++;
-
-        marketStats[t.market] = (marketStats[t.market] || 0) + t.pnl;
-        noteStats[t.note] = (noteStats[t.note] || 0) + t.pnl;
     });
 
     const winrate = (wins / trades.length) * 100;
 
-    let bestMarket = "";
-    let bestSetup = "";
+    document.getElementById("ai-box").innerHTML = `
+        <h2>AI</h2>
+        <p>Winrate: ${winrate.toFixed(1)}%</p>
+        <p>Trades: ${trades.length}</p>
+    `;
+}
 
-    let bestM = -999999;
-    let bestS = -999999;
+/* INIT */
+document.getElementById("add-trade-btn").addEventListener("click", addTrade);
+document.getElementById("market-filter").addEventListener("change", render);
 
-    for (let
+render();
