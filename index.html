@@ -103,7 +103,7 @@
             gap: 15px;
             margin-top: 10px;
         }
-        @media (min-width: 768px) { .atr-grid { grid-template-columns: 1fr 2fr; } }
+        @media (min-width: 768px) { .atr-grid { grid-template-columns: 1.2fr 2fr; } }
         .atr-input-zone {
             background: var(--card-bg);
             padding: 15px;
@@ -112,8 +112,8 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            justify-content: center;
         }
+        .atr-input-zone label { font-size: 0.75rem; color: var(--text-dim); }
         .atr-filters-output {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -234,6 +234,7 @@
         td { padding: 10px; border-bottom: 1px solid var(--border); }
         .val-gain { color: #00ff00; font-weight: bold; }
         .val-perte { color: #ff0000; font-weight: bold; }
+        .info-norm { font-size: 0.7rem; color: var(--text-dim); margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -292,11 +293,24 @@
     </div>
 
     <div class="atr-intelligence-box">
-        <h3 style="color: var(--orange); font-size: 0.9rem; margin-top: 0; text-transform: uppercase; text-align: center;">⚡ FILTRES ALGORITHMIQUES DE L'ATR</h3>
+        <h3 style="color: var(--orange); font-size: 0.9rem; margin-top: 0; text-transform: uppercase; text-align: center;">⚡ CONFIGURATEUR ET FILTRES ALGORITHMIQUES DE L'ATR</h3>
         <div class="atr-grid">
             <div class="atr-input-zone">
-                <label style="font-size: 0.75rem; color: var(--text-dim); text-align: center;">VALEUR ATR M1 ACTUELLE :</label>
-                <input type="number" id="live-atr" value="2.25" step="0.01" oninput="calculateAtrLogic()" style="text-align: center; font-size: 1.2rem; font-weight: bold; color: var(--orange);">
+                <label>1. SÉLECTIONNER L'INDICE :</label>
+                <select id="atr-asset-select" onchange="updateAssetDefaultAtr()">
+                    <option value="V75">V75 (Légende)</option>
+                    <option value="V100">V100 (Puissant)</option>
+                    <option value="V100_1S">V100 (1s) (Rapide)</option>
+                    <option value="V75_1S">V75 (1s) (Stable)</option>
+                    <option value="V10" selected>V10 (Tick Lourd)</option>
+                    <option value="V25">V25 (Fluide)</option>
+                    <option value="BOOM1000">Boom 1000 (Sell Scalp)</option>
+                    <option value="CRASH1000">Crash 1000 (Buy Scalp)</option>
+                </select>
+                <div id="atr-reference-display" class="info-norm">ATR M1 Normal : 2.00</div>
+
+                <label style="margin-top: 5px;">2. ENTRER L'ATR DE VOTRE ÉCRAN :</label>
+                <input type="number" id="live-atr" value="2.25" step="0.01" oninput="calculateAtrLogic()" style="text-align: center; font-size: 1.1rem; font-weight: bold; color: var(--orange);">
             </div>
             <div class="atr-filters-output">
                 <div class="filter-card">
@@ -425,39 +439,77 @@
 </div>
 
 <script>
+    // Base de données des ATR M1 normaux / standards pour chaque indice
+    const ASSET_ATR_DATABASE = {
+        "V75": 140.0,
+        "V100": 11.5,
+        "V100_1S": 2.5,
+        "V75_1S": 6.8,
+        "V10": 2.0,
+        "V25": 0.45,
+        "BOOM1000": 0.85,
+        "CRASH1000": 0.95
+    };
+
+    function updateAssetDefaultAtr() {
+        const selectedAsset = document.getElementById('atr-asset-select').value;
+        const defaultAtr = ASSET_ATR_DATABASE[selectedAsset];
+        
+        // On affiche l'ATR normal attendu pour guider l'utilisateur
+        document.getElementById('atr-reference-display').innerText = "ATR M1 Normal : " + defaultAtr.toFixed(2);
+        
+        // On pré-remplit la case avec cette valeur par défaut
+        document.getElementById('live-atr').value = defaultAtr;
+        
+        // On synchronise automatiquement l'indice du Journal de Bord pour faire gagner du temps
+        const journalMarket = document.getElementById('j-market');
+        if(selectedAsset === "V100_1S") journalMarket.value = "V100 (1s)";
+        else if(selectedAsset === "V75_1S") journalMarket.value = "V75 (1s)";
+        else if(selectedAsset === "BOOM1000") journalMarket.value = "Boom 1000";
+        else if(selectedAsset === "CRASH1000") journalMarket.value = "Crash 1000";
+        else journalMarket.value = selectedAsset;
+
+        calculateAtrLogic();
+    }
+
     function calculateAtrLogic() {
         const atrInput = document.getElementById('live-atr').value;
         if(atrInput === "") return;
         const atr = parseFloat(atrInput);
+
+        const selectedAsset = document.getElementById('atr-asset-select').value;
+        const referenceAtr = ASSET_ATR_DATABASE[selectedAsset];
 
         const fMarket = document.getElementById('f-market-status');
         const fVol = document.getElementById('f-vol-status');
         const fOvertrade = document.getElementById('f-overtrade-status');
         const fSetup = document.getElementById('f-setup-status');
 
-        // Textes d'indications dynamiques sous la check-list
+        // Mises à jour des indicateurs de la check-list
         document.getElementById('calc-buy-sl').innerText = "Entry - " + (2 * atr).toFixed(2);
         document.getElementById('calc-buy-tp').innerText = "Entry + " + (3 * atr).toFixed(2);
         document.getElementById('calc-sell-sl').innerText = "Entry + " + (2 * atr).toFixed(2);
         document.getElementById('calc-sell-tp').innerText = "Entry - " + (3 * atr).toFixed(2);
 
-        // Application stricte de ta logique demandée
-        if (atr < 0.8) {
-            // Marché mort
+        // Calcul du ratio d'écart par rapport à la volatilité normale de cet actif précis
+        const ratio = atr / referenceAtr;
+
+        if (ratio < 0.65) {
+            // Le marché ne bouge pas assez comparé à sa moyenne
             fMarket.innerText = "MARCHÉ MORT"; fMarket.style.color = "#ff0000";
             fVol.innerText = "DANGER INFÉRIEUR"; fVol.style.color = "#ff0000";
             fOvertrade.innerText = "BLOCAGE STRICT (PAS DE TRADE)"; fOvertrade.style.color = "#ff0000";
             fSetup.innerText = "SETUP INVALIDE (0/5)"; fSetup.style.color = "#ff0000";
         } 
-        else if (atr >= 0.8 && atr <= 1.5) {
-            // Marché normal
+        else if (ratio >= 0.65 && ratio <= 1.35) {
+            // Volatilité classique et saine pour l'actif
             fMarket.innerText = "MARCHÉ NORMAL"; fMarket.style.color = "#ffa500";
             fVol.innerText = "STABLE"; fVol.style.color = "#ffa500";
             fOvertrade.innerText = "AUTORISÉ (RESTEZ PRUDENT)"; fOvertrade.style.color = "#ffa500";
             fSetup.innerText = "QUALITÉ MOYENNE (3/5)"; fSetup.style.color = "#ffa500";
         } 
-        else if (atr > 1.5) {
-            // Marché idéal scalping
+        else if (ratio > 1.35) {
+            // Grosses bougies, parfait pour le scalping rapide
             fMarket.innerText = "IDÉAL SCALPING"; fMarket.style.color = "#00ff00";
             fVol.innerText = "EXCELLENTE ACTIVE"; fVol.style.color = "#00ff00";
             fOvertrade.innerText = "FEU VERT (FONCEZ)"; fOvertrade.style.color = "#00ff00";
@@ -576,7 +628,10 @@
             renderTrades();
         }
     }
-    window.onload = renderTrades;
+    window.onload = function() {
+        renderTrades();
+        updateAssetDefaultAtr();
+    };
 </script>
 </body>
 </html>
