@@ -1,0 +1,258 @@
+:root {
+
+    --bg-color: #0b0e11;
+    --card-bg: #1e2329;
+    --text-main: #eaecef;
+    --text-dim: #848e9c;
+
+    --orange: #FFA500;
+    --green: #00FF00;
+    --red: #FF0000;
+    --gold: #FFD700;
+
+    --border: #2b3139;
+}
+
+body {
+
+    margin: 0;
+    padding: 10px;
+
+    background: var(--bg-color);
+
+    color: var(--text-main);
+
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.container {
+    max-width: 1400px;
+    margin: auto;
+}
+
+h1, h2 {
+    text-align: center;
+    color: var(--orange);
+}
+
+/* =========================
+   DASHBOARD
+========================= */
+
+.stats-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(160px, 1fr));
+
+    gap: 10px;
+
+    margin-bottom: 20px;
+}
+
+.stat-card,
+.card,
+.section-box,
+.mm-box {
+
+    background: var(--card-bg);
+
+    border: 1px solid var(--border);
+
+    border-radius: 12px;
+
+    padding: 15px;
+}
+
+.stat-card {
+    text-align: center;
+}
+
+.stat-label {
+
+    font-size: 0.75rem;
+
+    color: var(--text-dim);
+
+    margin-bottom: 5px;
+}
+
+.stat-val {
+
+    font-size: 1.1rem;
+
+    font-weight: bold;
+}
+
+/* =========================
+   MONEY MANAGEMENT
+========================= */
+
+.mm-box {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(180px, 1fr));
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+}
+
+.mm-item {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+/* =========================
+   INPUTS
+========================= */
+
+input,
+select,
+button {
+
+    padding: 10px;
+
+    border-radius: 6px;
+
+    border: 1px solid var(--border);
+
+    background: #161a1e;
+
+    color: white;
+}
+
+button {
+
+    cursor: pointer;
+
+    font-weight: bold;
+
+    transition: 0.2s ease;
+}
+
+button:hover {
+    transform: scale(1.02);
+}
+
+/* =========================
+   JOURNAL
+========================= */
+
+.journal-form {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(180px, 1fr));
+
+    gap: 10px;
+
+    margin-bottom: 15px;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+}
+
+th {
+
+    background: #111827;
+
+    padding: 10px;
+}
+
+td {
+
+    padding: 10px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.val-gain {
+    color: var(--green);
+    font-weight: bold;
+}
+
+.val-perte {
+    color: var(--red);
+    font-weight: bold;
+}
+
+/* =========================
+   ACTIONS
+========================= */
+
+.actions {
+
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 20px;
+
+    flex-wrap: wrap;
+}
+
+/* =========================
+   🔥 NOUVEAUX STYLES PRO TRADING
+========================= */
+
+/* ATR STATUS */
+#atr-status {
+
+    font-weight: bold;
+
+    padding: 6px;
+
+    border-radius: 6px;
+
+    text-align: center;
+}
+
+/* TRADING STATUS */
+#trading-status {
+
+    font-weight: bold;
+
+    padding: 6px;
+
+    border-radius: 6px;
+
+    text-align: center;
+}
+
+/* STATUS OK */
+.status-ok {
+    color: var(--green);
+}
+
+/* STATUS WARNING */
+.status-warning {
+    color: var(--orange);
+}
+
+/* STATUS BLOCKED */
+.status-blocked {
+    color: var(--red);
+}
+
+/* CARD HIGHLIGHT (optionnel futur usage) */
+.highlight-card {
+    border: 1px solid var(--gold);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.2);
+}

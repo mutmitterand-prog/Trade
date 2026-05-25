@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Trading Terminal - MUTMITT
+    </title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+<body>
+
+<div class="container">
+
+    <h1>
+        MUTMITT - Terminal Trading
+    </h1>
+
+    <!-- DASHBOARD -->
+
+    <div class="stats-grid">
+
+        <div id="card-day" class="stat-card">
+            <div class="stat-label">Bilan Jour</div>
+            <div id="pnl-day" class="stat-val">0.00 $</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Bilan Semaine</div>
+            <div id="pnl-week" class="stat-val">0.00 $</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Bilan Mois</div>
+            <div id="pnl-month" class="stat-val">0.00 $</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Bilan Année</div>
+            <div id="pnl-year" class="stat-val">0.00 $</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Performance %</div>
+            <div id="pnl-total-perc" class="stat-val">0%</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Winrate</div>
+            <div id="winrate" class="stat-val">0%</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Trades</div>
+            <div id="total-trades" class="stat-val">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Drawdown</div>
+            <div id="drawdown" class="stat-val">0.00 $</div>
+        </div>
+
+    </div>
+
+    <!-- MONEY MANAGEMENT -->
+
+    <div class="mm-box">
+
+        <div class="mm-item">
+            <label>Capital Initial ($)</label>
+            <input type="number" id="mm-balance-init" value="100">
+        </div>
+
+        <div class="mm-item">
+            <label>Objectif Jour ($)</label>
+            <input type="number" id="mm-target-day" value="20">
+        </div>
+
+        <div class="mm-item">
+            <label>Capital Actuel ($)</label>
+            <div id="current-balance" class="mm-res">
+                100.00 $
+            </div>
+        </div>
+
+        <div class="mm-item">
+            <label>Risque / Trade (%)</label>
+
+            <select id="mm-risk-percent">
+                <option value="1">1%</option>
+                <option value="2" selected>2%</option>
+                <option value="5">5%</option>
+            </select>
+        </div>
+
+        <div class="mm-item">
+            <label>Perte Max</label>
+            <div id="mm-allowed-loss" class="mm-res">
+                2.00 $
+            </div>
+        </div>
+
+        <!-- NOUVEAU : SESSION -->
+
+        <div class="mm-item">
+
+            <label>
+                Session Trading
+            </label>
+
+            <select id="session-select">
+
+                <option value="all">
+                    Toute la journée
+                </option>
+
+                <option value="morning">
+                    Morning Session
+                </option>
+
+                <option value="evening">
+                    Evening Session
+                </option>
+
+            </select>
+
+        </div>
+
+        <!-- NOUVEAU : ATR -->
+
+        <div class="mm-item">
+
+            <label>
+                ATR Manuel
+            </label>
+
+            <input
+                type="number"
+                id="atr-input"
+                step="0.1"
+                placeholder="ATR actuel">
+
+        </div>
+
+        <!-- NOUVEAU : ATR STATUS -->
+
+        <div class="mm-item">
+
+            <label>
+                ATR Status
+            </label>
+
+            <div id="atr-status" class="mm-res">
+                En attente...
+            </div>
+
+        </div>
+
+        <!-- NOUVEAU : TRADING STATUS -->
+
+        <div class="mm-item">
+
+            <label>
+                Trading Status
+            </label>
+
+            <div id="trading-status" class="mm-res">
+                Vérification...
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- EQUITY CURVE -->
+
+    <div class="card">
+
+        <h2>
+            📈 Equity Curve
+        </h2>
+
+        <canvas id="equityChart"></canvas>
+
+    </div>
+
+    <!-- JOURNAL -->
+
+    <div class="section-box">
+
+        <h2>
+            📓 Journal de Bord
+        </h2>
+
+        <div class="journal-form">
+
+            <select id="j-market">
+
+                <option value="V75">
+                    V75 (Légende)
+                </option>
+
+                <option value="V100">
+                    V100 (Puissant)
+                </option>
+
+                <option value="V100 (1s)">
+                    V100 (1s) (Rapide)
+                </option>
+
+                <option value="V75 (1s)">
+                    V75 (1s) (Stable)
+                </option>
+
+                <option value="V10">
+                    V10 (Tick Lourd)
+                </option>
+
+                <option value="V25">
+                    V25 (Fluide)
+                </option>
+
+                <option value="Boom 1000">
+                    Boom 1000 (Sell Scalp)
+                </option>
+
+                <option value="Crash 1000">
+                    Crash 1000 (Buy Scalp)
+                </option>
+
+            </select>
+
+            <select id="j-result">
+                <option value="Gain">Gain</option>
+                <option value="Perte">Perte</option>
+                <option value="BE">BE</option>
+            </select>
+
+            <input
+                type="number"
+                id="j-pnl"
+                placeholder="P&L $">
+
+            <input
+                type="text"
+                id="j-note"
+                placeholder="Note du trade">
+
+            <button id="add-trade-btn">
+                AJOUTER
+            </button>
+
+        </div>
+
+        <!-- FILTRE -->
+
+        <select id="market-filter">
+            <option value="all">
+                Tous les marchés
+            </option>
+            <option value="V75">V75</option>
+            <option value="V100">V100</option>
+            <option value="Boom 1000">Boom 1000</option>
+            <option value="Crash 1000">Crash 1000</option>
+        </select>
+
+        <!-- TABLE -->
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Indice</th>
+                        <th>Résultat</th>
+                        <th>P&L</th>
+                        <th>Note</th>
+                        <th>X</th>
+                    </tr>
+                </thead>
+
+                <tbody id="journal-body"></tbody>
+
+            </table>
+
+        </div>
+
+        <!-- ACTIONS -->
+
+        <div class="actions">
+
+            <button onclick="exportTrades()">
+                Export JSON
+            </button>
+
+            <input type="file" id="import-file">
+
+            <button onclick="importTrades()">
+                Import JSON
+            </button>
+
+            <button onclick="clearTrades()">
+                Reset Historique
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
