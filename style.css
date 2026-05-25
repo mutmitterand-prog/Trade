@@ -1,250 +1,71 @@
 :root {
-
-    --bg-color: #0b0e11;
-    --card-bg: #1e2329;
-    --text-main: #eaecef;
-    --text-dim: #848e9c;
-
-    --orange: #FFA500;
-    --green: #00FF00;
-    --red: #FF0000;
-    --gold: #FFD700;
-
-    --border: #2b3139;
+    --bg-color:#0b0e11;
+    --card-bg:#1e2329;
+    --text-main:#eaecef;
+    --text-dim:#848e9c;
+    --green:#00ff00;
+    --red:#ff0000;
+    --orange:#ffa500;
+    --border:#2b3139;
 }
 
 body {
-
-    margin: 0;
-    padding: 10px;
-
-    background: var(--bg-color);
-
-    color: var(--text-main);
-
-    font-family: 'Segoe UI', sans-serif;
+    margin:0;
+    background:var(--bg-color);
+    color:var(--text-main);
+    font-family:Segoe UI;
 }
 
 .container {
-    max-width: 1400px;
-    margin: auto;
+    max-width:1400px;
+    margin:auto;
 }
 
-h1, h2 {
-
-    text-align: center;
-
-    color: var(--orange);
-}
-
-/* =========================
-   DASHBOARD
-========================= */
+h1,h2 { text-align:center; color:var(--orange); }
 
 .stats-grid {
-
-    display: grid;
-
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-
-    gap: 10px;
-
-    margin-bottom: 20px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:10px;
 }
 
-.stat-card,
-.card,
-.mm-box {
-
-    background: var(--card-bg);
-
-    border: 1px solid var(--border);
-
-    border-radius: 12px;
-
-    padding: 15px;
+.stat-card,.card,.mm-box,.section-box {
+    background:var(--card-bg);
+    border:1px solid var(--border);
+    padding:15px;
+    border-radius:10px;
 }
 
-.stat-card {
-    text-align: center;
-}
-
-.stat-label {
-
-    font-size: 0.75rem;
-
-    color: var(--text-dim);
-
-    margin-bottom: 5px;
-}
-
-.stat-val {
-
-    font-size: 1.1rem;
-
-    font-weight: bold;
-}
-
-/* =========================
-   MM BOX
-========================= */
+.stat-val { font-weight:bold; }
 
 .mm-box {
-
-    display: grid;
-
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-
-    gap: 15px;
-
-    margin-bottom: 20px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:10px;
 }
 
-.mm-item {
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 5px;
+input,select,button {
+    padding:10px;
+    background:#161a1e;
+    color:white;
+    border:1px solid var(--border);
 }
 
-/* =========================
-   INPUTS
-========================= */
+button { cursor:pointer; }
 
-input,
-select,
-button {
+.val-gain { color:var(--green); }
+.val-perte { color:var(--red); }
 
-    padding: 10px;
+.table-container { overflow-x:auto; }
 
-    border-radius: 6px;
+table { width:100%; border-collapse:collapse; }
 
-    border: 1px solid var(--border);
+th { background:#111827; padding:10px; }
+td { padding:10px; border-bottom:1px solid var(--border); }
 
-    background: #161a1e;
-
-    color: white;
-}
-
-button {
-
-    cursor: pointer;
-
-    font-weight: bold;
-
-    transition: 0.2s;
-}
-
-button:hover {
-    transform: scale(1.03);
-}
-
-/* =========================
-   CHECKLIST
-========================= */
-
-.card label {
-
-    display: block;
-
-    margin: 6px 0;
-
-    font-size: 0.9rem;
-}
-
-/* =========================
-   SCENARIOS
-========================= */
-
-.grid {
-
-    display: grid;
-
-    grid-template-columns: 1fr 1fr;
-
-    gap: 10px;
-}
-
-.box {
-
-    padding: 12px;
-
-    border-radius: 10px;
-
-    background: #161a1e;
-
-    border: 1px solid var(--border);
-}
-
-.green {
-    border-left: 4px solid var(--green);
-}
-
-.red {
-    border-left: 4px solid var(--red);
-}
-
-/* =========================
-   JOURNAL
-========================= */
-
-table {
-
-    width: 100%;
-
-    border-collapse: collapse;
-}
-
-th {
-
-    background: #111827;
-
-    padding: 10px;
-}
-
-td {
-
-    padding: 10px;
-
-    border-bottom: 1px solid var(--border);
-}
-
-.val-gain {
-    color: var(--green);
-}
-
-.val-perte {
-    color: var(--red);
-}
-
-/* =========================
-   ACTIONS
-========================= */
-
-.actions {
-
-    display: flex;
-
-    gap: 10px;
-
-    flex-wrap: wrap;
-
-    margin-top: 20px;
-}
-
-/* =========================
-   AI BOX
-========================= */
+.actions { display:flex; gap:10px; flex-wrap:wrap; }
 
 #ai-box {
-
-    margin-bottom: 15px;
-
-    border: 1px solid var(--orange);
-
-    padding: 10px;
-
-    border-radius: 10px;
+    border:1px solid var(--orange);
+    margin-top:10px;
 }
