@@ -31,7 +31,9 @@ body {
 }
 
 h1, h2 {
+
     text-align: center;
+
     color: var(--orange);
 }
 
@@ -43,8 +45,7 @@ h1, h2 {
 
     display: grid;
 
-    grid-template-columns:
-        repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 
     gap: 10px;
 
@@ -53,7 +54,6 @@ h1, h2 {
 
 .stat-card,
 .card,
-.section-box,
 .mm-box {
 
     background: var(--card-bg);
@@ -86,15 +86,14 @@ h1, h2 {
 }
 
 /* =========================
-   MONEY MANAGEMENT
+   MM BOX
 ========================= */
 
 .mm-box {
 
     display: grid;
 
-    grid-template-columns:
-        repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 
     gap: 15px;
 
@@ -135,32 +134,61 @@ button {
 
     font-weight: bold;
 
-    transition: 0.2s ease;
+    transition: 0.2s;
 }
 
 button:hover {
-    transform: scale(1.02);
+    transform: scale(1.03);
+}
+
+/* =========================
+   CHECKLIST
+========================= */
+
+.card label {
+
+    display: block;
+
+    margin: 6px 0;
+
+    font-size: 0.9rem;
+}
+
+/* =========================
+   SCENARIOS
+========================= */
+
+.grid {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 10px;
+}
+
+.box {
+
+    padding: 12px;
+
+    border-radius: 10px;
+
+    background: #161a1e;
+
+    border: 1px solid var(--border);
+}
+
+.green {
+    border-left: 4px solid var(--green);
+}
+
+.red {
+    border-left: 4px solid var(--red);
 }
 
 /* =========================
    JOURNAL
 ========================= */
-
-.journal-form {
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(auto-fit, minmax(180px, 1fr));
-
-    gap: 10px;
-
-    margin-bottom: 15px;
-}
-
-.table-container {
-    overflow-x: auto;
-}
 
 table {
 
@@ -185,12 +213,10 @@ td {
 
 .val-gain {
     color: var(--green);
-    font-weight: bold;
 }
 
 .val-perte {
     color: var(--red);
-    font-weight: bold;
 }
 
 /* =========================
@@ -203,56 +229,22 @@ td {
 
     gap: 10px;
 
-    margin-top: 20px;
-
     flex-wrap: wrap;
+
+    margin-top: 20px;
 }
 
 /* =========================
-   🔥 NOUVEAUX STYLES PRO TRADING
+   AI BOX
 ========================= */
 
-/* ATR STATUS */
-#atr-status {
+#ai-box {
 
-    font-weight: bold;
+    margin-bottom: 15px;
 
-    padding: 6px;
+    border: 1px solid var(--orange);
 
-    border-radius: 6px;
+    padding: 10px;
 
-    text-align: center;
-}
-
-/* TRADING STATUS */
-#trading-status {
-
-    font-weight: bold;
-
-    padding: 6px;
-
-    border-radius: 6px;
-
-    text-align: center;
-}
-
-/* STATUS OK */
-.status-ok {
-    color: var(--green);
-}
-
-/* STATUS WARNING */
-.status-warning {
-    color: var(--orange);
-}
-
-/* STATUS BLOCKED */
-.status-blocked {
-    color: var(--red);
-}
-
-/* CARD HIGHLIGHT (optionnel futur usage) */
-.highlight-card {
-    border: 1px solid var(--gold);
-    box-shadow: 0 0 8px rgba(255, 215, 0, 0.2);
+    border-radius: 10px;
 }
