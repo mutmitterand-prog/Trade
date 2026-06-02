@@ -5,15 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trading Terminal - FKM ENERGY</title>
     
-    <!-- Liens d'installation pour la PWA Chrome -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0b0e11">
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker enregistré avec succès ! Scope:', reg.scope))
-                    .catch(err => console.log('Échec de l\'enregistrement du Service Worker:', err));
+                    .then(reg => console.log('Service Worker enregistré avec succès !', reg.scope))
+                    .catch(err => console.log('Échec Service Worker:', err));
             });
         }
     </script>
@@ -58,7 +57,6 @@
             border-radius: 8px;
             padding: 12px;
             text-align: center;
-            transition: 0.3s;
         }
         .stat-label {
             font-size: 0.65rem;
@@ -90,7 +88,7 @@
         .highlight { color: var(--orange); font-size: 1.3rem; }
         .target-status { font-size: 0.8rem; font-weight: bold; margin-top: 2px; }
 
-        /* NOUVEAU BLOC ANALYSE ATR AVANCÉ */
+        /* CONFIGURATEUR ATR MULTI-TIMEFRAME */
         .atr-intelligence-box {
             background: #161a1e;
             border: 1px solid var(--orange);
@@ -104,7 +102,8 @@
             gap: 15px;
             margin-top: 10px;
         }
-        @media (min-width: 768px) { .atr-grid { grid-template-columns: 1.2fr 2fr; } }
+        @media (min-width: 768px) { .atr-grid { grid-template-columns: 1.5fr 2fr; } }
+        
         .atr-input-zone {
             background: var(--card-bg);
             padding: 15px;
@@ -112,9 +111,25 @@
             border: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
-        .atr-input-zone label { font-size: 0.75rem; color: var(--text-dim); }
+        .atr-input-zone label { font-size: 0.75rem; color: var(--text-dim); font-weight: bold; }
+        
+        .atr-inputs-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .atr-sub-box {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            text-align: center;
+        }
+        .atr-sub-box span { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; }
+        .atr-sub-box input { text-align: center; font-weight: bold; font-size: 1rem; color: #fff; }
+        .atr-sub-box input.active-input { color: var(--orange); border-color: var(--orange); }
+
         .atr-filters-output {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -126,9 +141,12 @@
             padding: 10px;
             border-radius: 8px;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         .filter-title { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 5px; }
-        .filter-status { font-weight: bold; font-size: 0.9rem; }
+        .filter-status { font-weight: bold; font-size: 0.85rem; line-height: 1.2; }
 
         /* CHECKLIST SEPARÉE */
         .checklist-container {
@@ -161,9 +179,9 @@
         }
         .atr-highlight-check {
             background: rgba(255, 165, 0, 0.05);
-            padding: 4px;
-            border-radius: 4px;
-            border-left: 2px solid var(--orange);
+            padding: 6px;
+            border-radius: 6px;
+            border-left: 3px solid var(--orange);
         }
 
         .card {
@@ -202,10 +220,7 @@
             margin-bottom: 20px;
             border: 1px solid var(--border);
         }
-        .strategy-alert {
-            padding: 10px;
-            border-radius: 6px;
-        }
+        .strategy-alert { padding: 10px; border-radius: 6px; }
         .strategy-alert ul li { margin-bottom: 5px; }
         .strategy-alert p { margin: 5px 0; font-size: 0.9rem; }
         .orange-text { color: var(--orange); font-weight: bold; }
@@ -241,7 +256,7 @@
         td { padding: 10px; border-bottom: 1px solid var(--border); }
         .val-gain { color: #00ff00; font-weight: bold; }
         .val-perte { color: #ff0000; font-weight: bold; }
-        .info-norm { font-size: 0.7rem; color: var(--text-dim); margin-top: 2px; }
+        .info-norm { font-size: 0.65rem; color: var(--text-dim); margin-top: 1px; font-style: italic; }
     </style>
 </head>
 <body>
@@ -300,10 +315,10 @@
     </div>
 
     <div class="atr-intelligence-box">
-        <h3 style="color: var(--orange); font-size: 0.9rem; margin-top: 0; text-transform: uppercase; text-align: center;">⚡ CONFIGURATEUR ET FILTRES ALGORITHMIQUES DE L'ATR</h3>
+        <h3 style="color: var(--orange); font-size: 0.9rem; margin-top: 0; text-transform: uppercase; text-align: center;">⚡ ANALYSEUR AUTOMATIQUE D'ATR MULTI-TIMEFRAME (M1 / M15 / H1)</h3>
         <div class="atr-grid">
             <div class="atr-input-zone">
-                <label>1. SÉLECTIONNER L'INDICE :</label>
+                <label>1. CHOISIR L'INDICE :</label>
                 <select id="atr-asset-select" onchange="updateAssetDefaultAtr()">
                     <option value="V75">V75 (Légende)</option>
                     <option value="V100">V100 (Puissant)</option>
@@ -314,26 +329,41 @@
                     <option value="BOOM1000">Boom 1000 (Sell Scalp)</option>
                     <option value="CRASH1000">Crash 1000 (Buy Scalp)</option>
                 </select>
-                <div id="atr-reference-display" class="info-norm">ATR M1 Normal : 2.00</div>
 
-                <label style="margin-top: 5px;">2. ENTRER L'ATR M1 DE VOTRE ÉCRAN :</label>
-                <input type="number" id="live-atr" value="2.25" step="0.01" oninput="calculateAtrLogic()" style="text-align: center; font-size: 1.1rem; font-weight: bold; color: var(--orange);">
+                <label style="margin-top: 5px;">2. ENTRER LES VALEURS DE VOTRE MT5 :</label>
+                <div class="atr-inputs-row">
+                    <div class="atr-sub-box">
+                        <span>ATR M1</span>
+                        <input type="number" id="live-atr" value="2.25" step="0.01" oninput="calculateAtrLogic()" class="active-input">
+                        <div id="ref-m1" class="info-norm">Norm: 2.0</div>
+                    </div>
+                    <div class="atr-sub-box">
+                        <span>ATR M15</span>
+                        <input type="number" id="live-atr-m15" value="4.50" step="0.01" oninput="calculateAtrLogic()">
+                        <div id="ref-m15" class="info-norm">Norm: 4.0</div>
+                    </div>
+                    <div class="atr-sub-box">
+                        <span>ATR H1</span>
+                        <input type="number" id="live-atr-h1" value="9.50" step="0.01" oninput="calculateAtrLogic()">
+                        <div id="ref-h1" class="info-norm">Norm: 9.0</div>
+                    </div>
+                </div>
             </div>
             <div class="atr-filters-output">
                 <div class="filter-card">
-                    <div class="filter-title">📈 Filtre de Marché</div>
-                    <div id="f-market-status" class="filter-status">-</div>
+                    <div class="filter-title">📈 Validation H1 / M15</div>
+                    <div id="f-htf-status" class="filter-status">-</div>
                 </div>
                 <div class="filter-card">
-                    <div class="filter-title">🔥 Filtre Volatilité</div>
+                    <div class="filter-title">🔥 Volatilité M1</div>
                     <div id="f-vol-status" class="filter-status">-</div>
                 </div>
                 <div class="filter-card">
-                    <div class="filter-title">🛡️ Anti Sur-Trading</div>
+                    <div class="filter-title">🛡️ Autorisation Trading</div>
                     <div id="f-overtrade-status" class="filter-status">-</div>
                 </div>
                 <div class="filter-card">
-                    <div class="filter-title">🎯 Qualité du Setup</div>
+                    <div class="filter-title">🎯 Qualité Globale</div>
                     <div id="f-setup-status" class="filter-status">-</div>
                 </div>
             </div>
@@ -344,23 +374,23 @@
         <div class="checklist-box buy">
             <h3 style="color: var(--green); font-size: 0.9rem; margin-top: 0; text-transform: uppercase;">🟢 CHECK-LIST ACHAT (BUY)</h3>
             <label class="check-item"><input type="checkbox" class="t-check"> HTF (H1/M15) : RSI est inférieur à 70</label>
-            <label class="check-item atr-highlight-check"><input type="checkbox" class="t-check"> 🔍 <b>HTF (H1/M15) ATR :</b> Courbe stable ou haussière (Pas d'effondrement)</label>
+            <label class="check-item atr-highlight-check"><input type="checkbox" class="t-check"> 🔍 <b>Validation HTF (H1/M15) ATR :</b> <span id="chk-buy-htf-atr" style="font-weight:bold; color:var(--text-dim);">En attente de calcul...</span></label>
             <label class="check-item"><input type="checkbox" class="t-check"> M1 : Rejet net EMA 50 ou Croisement EMA 50 > 200</label>
             <label class="check-item"><input type="checkbox" class="t-check"> M1 : Stochastique en survente (Sous la zone 20)</label>
             <label class="check-item"><input type="checkbox" class="t-check"> M1 : RSI en confluence basse (Sous la zone 35)</label>
-            <label class="check-item atr-highlight-check"><input type="checkbox" class="t-check"> ⚙️ <b>M1 ATR :</b> Filtre Validé (Marché Normal ou Idéal Scalping)</label>
-            <label class="check-item"><input type="checkbox" class="t-check"> M1 : SL programmé à <span id="calc-buy-sl" style="color:var(--orange); font-weight:bold;">-</span> | TP à <span id="calc-buy-tp" style="color:var(--green); font-weight:bold;">-</span></label>
+            <label class="check-item atr-highlight-check"><input type="checkbox" class="t-check"> ⚙️ <b>Validation M1 ATR :</b> <span id="chk-buy-m1-atr" style="font-weight:bold; color:var(--text-dim);">En attente de calcul...</span></label>
+            <label class="check-item"><input type="checkbox" class="t-check"> M1 : SL à <span id="calc-buy-sl" style="color:var(--orange); font-weight:bold;">-</span> | TP à <span id="calc-buy-tp" style="color:var(--green); font-weight:bold;">-</span></label>
         </div>
 
         <div class="checklist-box sell">
             <h3 style="color: var(--red); font-size: 0.9rem; margin-top: 0; text-transform: uppercase;">🔴 CHECK-LIST VENTE (SELL)</h3>
             <label class="check-item"><input type="checkbox" class="t-check"> HTF (H1/M15) : RSI est supérieur à 30</label>
-            <label class="check-item atr-highlight-check"><input type="checkbox" class="t-check"> 🔍 <b>HTF (H1/M15) ATR :</b> Courbe stable ou haussière (Pas d'effondrement)</label>
+            <label class="check-item atr-highlight-check"><input type="checkbox" class="t-check"> 🔍 <b>Validation HTF (H1/M15) ATR :</b> <span id="chk-sell-htf-atr" style="font-weight:bold; color:var(--text-dim);">En attente de calcul...</span></label>
             <label class="check-item"><input type="checkbox" class="t-check"> M1 : Rejet net EMA 50 ou Croisement EMA 50 &lt; 200</label>
             <label class="check-item"><input type="checkbox" class="t-check"> M1 : Stochastique en surachat (Au-dessus de la zone 80)</label>
             <label class="check-item"><input type="checkbox" class="t-check"> M1 : RSI en confluence haute (Au-dessus de la zone 65)</label>
-            <label class="check-item atr-highlight-check"><input type="checkbox" class="t-check"> ⚙️ <b>M1 ATR :</b> Filtre Validé (Marché Normal ou Idéal Scalping)</label>
-            <label class="check-item"><input type="checkbox" class="t-check"> M1 : SL programmé à <span id="calc-sell-sl" style="color:var(--orange); font-weight:bold;">-</span> | TP à <span id="calc-sell-tp" style="color:var(--red); font-weight:bold;">-</span></label>
+            <label class="check-item atr-highlight-check"><input type="checkbox" class="t-check"> ⚙️ <b>Validation M1 ATR :</b> <span id="chk-sell-m1-atr" style="font-weight:bold; color:var(--text-dim);">En attente de calcul...</span></label>
+            <label class="check-item"><input type="checkbox" class="t-check"> M1 : SL à <span id="calc-sell-sl" style="color:var(--orange); font-weight:bold;">-</span> | TP à <span id="calc-sell-tp" style="color:var(--red); font-weight:bold;">-</span></label>
         </div>
     </div>
 
@@ -380,21 +410,19 @@
 
         <div class="section-card" style="border-top: 3px solid #ffaa00; background: #1c2128;">
             <h3 style="color: #ffaa00; margin-top: 0;">📉 PROTOCOLE DE CLÔTURE</h3>
-            
             <div class="strategy-alert" style="border-left: 4px solid #ff0000; background: #252a31; margin-bottom: 10px;">
                 <p><strong>1. SORTIE DE SÉCURITÉ (STOP LOSS OPTIMISÉ & ATR)</strong></p>
                 <ul style="font-size: 0.85rem; color: #8b949e; padding-left: 20px;">
                     <li><strong>Achat / Vente :</strong> Clôture immédiate si le prix atteint <span class="orange-text">Entry ± (2x ATR M1)</span> pour absorber la volatilité.</li>
                     <li><strong>Sortie Technique :</strong> Clôture si bougie M1 clôture à l'opposé de l'EMA 50 (sous EMA pour achat / au-dessus pour vente).</li>
-                    <li><strong>Hard Stop :</strong> Toujours respecter la Perte Max stricte de <span class="orange-text" id="display-loss-limit">2.00 $</span> (ajuster la taille du lot selon la valeur de l'ATR).</li>
+                    <li><strong>Hard Stop :</strong> Toujours respecter la Perte Max stricte de <span class="orange-text" id="display-loss-limit">2.00 $</span>.</li>
                 </ul>
             </div>
             <div class="strategy-alert" style="border-left: 4px solid #00ff00; background: #252a31;">
                 <p><strong>2. PRISE DE PROFIT (TAKE PROFIT OPTIMISÉ & ATR)</strong></p>
                 <ul style="font-size: 0.85rem; color: #8b949e; padding-left: 20px;">
                     <li><strong>Objectif Fixe Volatilité :</strong> Viser un objectif mathématique à <span class="green-text">3x ou 4x ATR M1</span> pour maximiser le ratio R:R.</li>
-                    <li><strong>Objectif RSI / Stoch :</strong> Sortir alternativement quand le RSI M1 atteint la zone opposée (70 pour achat / 30 pour vente) ou croisement inverse.</li>
-                    <li><strong>Sécurisation ATR :</strong> Dès que le trade atteint un gain égal à <span class="green-text">1x ATR M1</span>, sécuriser immédiatement à Breakeven (BE).</li>
+                    <li><strong>Sécurisation ATR :</strong> Dès que le trade atteint un gain égal à <span class="green-text">0.50 ATR M1</span> (ou 1x ATR selon ta convenance), sécuriser immédiatement à Breakeven (BE) pour sortir gagnant ou neutre.</li>
                 </ul>
             </div>
         </div>
@@ -448,29 +476,33 @@
 </div>
 
 <script>
-    // Base de données des ATR M1 normaux / standards pour chaque indice
-    const ASSET_ATR_DATABASE = {
-        "V75": 140.0,
-        "V100": 11.5,
-        "V100_1S": 2.5,
-        "V75_1S": 6.8,
-        "V10": 2.0,
-        "V25": 0.45,
-        "BOOM1000": 0.85,
-        "CRASH1000": 0.95
+    // Base de données complète des ATR standards sur 3 unités de temps (M1, M15, H1)
+    const MTF_ATR_DATABASE = {
+        "V75": { m1: 140.0, m15: 540.0, h1: 1100.0 },
+        "V100": { m1: 11.5, m15: 45.0, h1: 90.0 },
+        "V100_1S": { m1: 2.5, m15: 9.8, h1: 20.0 },
+        "V75_1S": { m1: 6.8, m15: 26.0, h1: 52.0 },
+        "V10": { m1: 2.0, m15: 4.0, h1: 9.0 },
+        "V25": { m1: 0.45, m15: 1.8, h1: 3.5 },
+        "BOOM1000": { m1: 0.85, m15: 3.2, h1: 6.5 },
+        "CRASH1000": { m1: 0.95, m15: 3.8, h1: 7.8 }
     };
 
     function updateAssetDefaultAtr() {
         const selectedAsset = document.getElementById('atr-asset-select').value;
-        const defaultAtr = ASSET_ATR_DATABASE[selectedAsset];
+        const db = MTF_ATR_DATABASE[selectedAsset];
         
-        // On affiche l'ATR normal attendu pour guider l'utilisateur
-        document.getElementById('atr-reference-display').innerText = "ATR M1 Normal : " + defaultAtr.toFixed(2);
+        // Mettre à jour les labels d'aide (Norm:)
+        document.getElementById('ref-m1').innerText = "Norm: " + db.m1.toFixed(1);
+        document.getElementById('ref-m15').innerText = "Norm: " + db.m15.toFixed(1);
+        document.getElementById('ref-h1').innerText = "Norm: " + db.h1.toFixed(1);
         
-        // On pré-remplit la case avec cette valeur par défaut
-        document.getElementById('live-atr').value = defaultAtr;
+        // Remplir automatiquement les inputs avec les valeurs standards
+        document.getElementById('live-atr').value = db.m1;
+        document.getElementById('live-atr-m15').value = db.m15;
+        document.getElementById('live-atr-h1').value = db.h1;
         
-        // On synchronise automatiquement l'indice du Journal de Bord pour faire gagner du temps
+        // Sync Journal
         const journalMarket = document.getElementById('j-market');
         if(selectedAsset === "V100_1S") journalMarket.value = "V100 (1s)";
         else if(selectedAsset === "V75_1S") journalMarket.value = "V75 (1s)";
@@ -482,44 +514,77 @@
     }
 
     function calculateAtrLogic() {
-        const atrInput = document.getElementById('live-atr').value;
-        if(atrInput === "") return;
-        const atr = parseFloat(atrInput);
-
         const selectedAsset = document.getElementById('atr-asset-select').value;
-        const referenceAtr = ASSET_ATR_DATABASE[selectedAsset];
+        const db = MTF_ATR_DATABASE[selectedAsset];
 
-        const fMarket = document.getElementById('f-market-status');
+        const m1Live = parseFloat(document.getElementById('live-atr').value || 0);
+        const m15Live = parseFloat(document.getElementById('live-atr-m15').value || 0);
+        const h1Live = parseFloat(document.getElementById('live-atr-h1').value || 0);
+
+        // Sélection des éléments HTML de sortie
+        const fHtf = document.getElementById('f-htf-status');
         const fVol = document.getElementById('f-vol-status');
         const fOvertrade = document.getElementById('f-overtrade-status');
         const fSetup = document.getElementById('f-setup-status');
 
-        // Mises à jour dynamiques des valeurs indicatives de SL et TP dans la check-list selon l'ATR actuel
-        document.getElementById('calc-buy-sl').innerText = "Entry - " + (2 * atr).toFixed(2);
-        document.getElementById('calc-buy-tp').innerText = "Entry + " + (3 * atr).toFixed(2);
-        document.getElementById('calc-sell-sl').innerText = "Entry + " + (2 * atr).toFixed(2);
-        document.getElementById('calc-sell-tp').innerText = "Entry - " + (3 * atr).toFixed(2);
+        const chkBuyHtf = document.getElementById('chk-buy-htf-atr');
+        const chkBuyM1 = document.getElementById('chk-buy-m1-atr');
+        const chkSellHtf = document.getElementById('chk-sell-htf-atr');
+        const chkSellM1 = document.getElementById('chk-sell-m1-atr');
 
-        // Calcul du ratio d'écart par rapport à la volatilité normale de cet actif précis
-        const ratio = atr / referenceAtr;
+        // Mises à jour mathématiques des objectifs de prix SL/TP
+        document.getElementById('calc-buy-sl').innerText = "Entry - " + (2 * m1Live).toFixed(2);
+        document.getElementById('calc-buy-tp').innerText = "Entry + " + (3 * m1Live).toFixed(2);
+        document.getElementById('calc-sell-sl').innerText = "Entry + " + (2 * m1Live).toFixed(2);
+        document.getElementById('calc-sell-tp').innerText = "Entry - " + (3 * m1Live).toFixed(2);
 
-        if (ratio < 0.65) {
-            fMarket.innerText = "MARCHÉ MORT"; fMarket.style.color = "#ff0000";
-            fVol.innerText = "DANGER INFÉRIEUR"; fVol.style.color = "#ff0000";
-            fOvertrade.innerText = "BLOCAGE STRICT (PAS DE TRADE)"; fOvertrade.style.color = "#ff0000";
-            fSetup.innerText = "SETUP INVALIDE (0/5)"; fSetup.style.color = "#ff0000";
-        } 
-        else if (ratio >= 0.65 && ratio <= 1.35) {
-            fMarket.innerText = "MARCHÉ NORMAL"; fMarket.style.color = "#ffa500";
-            fVol.innerText = "STABLE"; fVol.style.color = "#ffa500";
-            fOvertrade.innerText = "AUTORISÉ (RESTEZ PRUDENT)"; fOvertrade.style.color = "#ffa500";
-            fSetup.innerText = "QUALITÉ MOYENNE (3/5)"; fSetup.style.color = "#ffa500";
-        } 
-        else if (ratio > 1.35) {
-            fMarket.innerText = "IDÉAL SCALPING"; fMarket.style.color = "#00ff00";
-            fVol.innerText = "EXCELLENTE ACTIVE"; fVol.style.color = "#00ff00";
-            fOvertrade.innerText = "FEU VERT (FONCEZ)"; fOvertrade.style.color = "#00ff00";
-            fSetup.innerText = "EXCELLENTE QUALITÉ (5/5)"; fSetup.style.color = "#00ff00";
+        // 1. ANALYSE HTF (M15 + H1)
+        const ratioM15 = m15Live / db.m15;
+        const ratioH1 = h1Live / db.h1;
+        let htfValid = true;
+
+        if (ratioM15 < 0.65 || ratioH1 < 0.65) {
+            htfValid = false;
+            fHtf.innerText = "DANGER : MARCHÉ S'ENDORT"; fHtf.style.color = "#ff0000";
+            chkBuyHtf.innerText = "🔴 BLOQUÉ (Volatilité de fond trop faible)"; chkBuyHtf.style.color = "#ff0000";
+            chkSellHtf.innerText = "🔴 BLOQUÉ (Volatilité de fond trop faible)"; chkSellHtf.style.color = "#ff0000";
+        } else {
+            fHtf.innerText = "VALIDÉ (FONDS SAINS)"; fHtf.style.color = "#00ff00";
+            chkBuyHtf.innerText = "🟢 VALIDE (Flux de fond OK)"; chkBuyHtf.style.color = "#00ff00";
+            chkSellHtf.innerText = "🟢 VALIDE (Flux de fond OK)"; chkSellHtf.style.color = "#00ff00";
+        }
+
+        // 2. ANALYSE LTF (M1)
+        const ratioM1 = m1Live / db.m1;
+        let m1Valid = "NORMAL";
+
+        if (ratioM1 < 0.65) {
+            m1Valid = "MORT";
+            fVol.innerText = "MORT / COMPRESSION"; fVol.style.color = "#ff0000";
+            chkBuyM1.innerText = "🔴 INVALIDE (Pas de mouvement en M1)"; chkBuyM1.style.color = "#ff0000";
+            chkSellM1.innerText = "🔴 INVALIDE (Pas de mouvement en M1)"; chkSellM1.style.color = "#ff0000";
+        } else if (ratioM1 >= 0.65 && ratioM1 <= 1.35) {
+            m1Valid = "NORMAL";
+            fVol.innerText = "CLASSIQUE STABLE"; fVol.style.color = "#ffa500";
+            chkBuyM1.innerText = "🟢 ACCORDÉ (Volatilité normale)"; chkBuyM1.style.color = "#ffa500";
+            chkSellM1.innerText = "🟢 ACCORDÉ (Volatilité normale)"; chkSellM1.style.color = "#ffa500";
+        } else {
+            m1Valid = "IDEAL";
+            fVol.innerText = "PARFAIT (EXPLOSIF)"; fVol.style.color = "#00ff00";
+            chkBuyM1.innerText = "🔥 EXCELLENT (Fortes impulsions)"; chkBuyM1.style.color = "#00ff00";
+            chkSellM1.innerText = "🔥 EXCELLENT (Fortes impulsions)"; chkSellM1.style.color = "#00ff00";
+        }
+
+        // 3. SYNTHÈSE DES DECISIONS (FILTRE FINAL D'AUTORISATION)
+        if (!htfValid || m1Valid === "MORT") {
+            fOvertrade.innerText = "INTERDIT (NO TRADE)"; fOvertrade.style.color = "#ff0000";
+            fSetup.innerText = "0 / 5 (MAUVAIS)"; fSetup.style.color = "#ff0000";
+        } else if (htfValid && m1Valid === "NORMAL") {
+            fOvertrade.innerText = "AUTORISÉ PRUDENT"; fOvertrade.style.color = "#ffa500";
+            fSetup.innerText = "3 / 5 (CORRECT)"; fSetup.style.color = "#ffa500";
+        } else if (htfValid && m1Valid === "IDEAL") {
+            fOvertrade.innerText = "FEU VERT COMPLET"; fOvertrade.style.color = "#00ff00";
+            fSetup.innerText = "5 / 5 (EXCELLENT)"; fSetup.style.color = "#00ff00";
         }
     }
 
@@ -588,7 +653,6 @@
         
         document.getElementById('current-balance').innerText = curBal.toFixed(2) + " $";
         document.getElementById('mm-allowed-loss').innerText = riskVal + " $";
-        document.getElementById('display-loss-limit').innerText = riskVal + " $";
 
         const targetStatus = document.getElementById('target-remaining');
         const cardDay = document.getElementById('card-day');
