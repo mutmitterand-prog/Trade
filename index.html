@@ -3,562 +3,583 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading Terminal - FKM ENERGY</title>
+    <title>Trading Terminal Mobile - FKM ENERGY</title>
     
-    <!-- Liens d'installation pour la PWA Chrome -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0b0e11">
+    <meta name="theme-color" content="#12161a">
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker enregistré avec succès !', reg.scope))
-                    .catch(err => console.log('Échec Service Worker:', err));
+                navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
             });
         }
     </script>
 
     <style>
         :root {
-            --bg-color: #0b0e11;
-            --card-bg: #1e2329;
+            --bg-color: #0d1114;
+            --card-bg: #161a1e;
+            --input-bg: #1f2429;
             --text-main: #eaecef;
-            --text-dim: #848e9c;
-            --blue: #0000ff;
-            --orange: #ffa500;
-            --green: #00ff00;
-            --red: #ff0000;
-            --gold: #ffd700;
-            --border: #2b3139;
+            --text-dim: #9099a4;
+            --blue: #2f80ed;
+            --orange: #f2994a;
+            --green: #27ae60;
+            --red: #eb5757;
+            --gold: #f2c94c;
+            --border: #242b32;
         }
+        * { box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            padding: 10px;
+            padding: 0;
+            padding-bottom: 30px;
         }
-        .container { max-width: 1400px; margin: 0 auto; }
+        .container { max-width: 600px; margin: 0 auto; padding: 12px; }
+        
         h1 {
             text-align: center;
-            color: var(--orange);
-            text-transform: uppercase;
-            font-size: 1.3rem;
+            color: #ffffff;
+            font-size: 1.1rem;
+            margin: 10px 0 15px 0;
+            letter-spacing: 1px;
         }
-        /* BILAN DASHBOARD */
+
+        /* MENU PAR ONGLETS */
+        .navigation-menu {
+            display: flex;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        .nav-tab {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            padding: 12px 5px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            border-bottom: 3px solid transparent;
+        }
+        .nav-tab.active {
+            color: var(--orange);
+            background: var(--input-bg);
+            border-bottom: 3px solid var(--orange);
+        }
+        
+        .menu-content { display: none; }
+        .menu-content.active { display: block; }
+
+        /* DASHBOARD COMPACT */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 10px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-bottom: 12px;
         }
-        .stat-card {
-            background: #161a1e;
+        .stats-card {
+            background: var(--card-bg);
             border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 4px;
+            text-align: center;
+        }
+        .stat-label { font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase; }
+        .stat-val { font-weight: bold; font-size: 0.85rem; margin-top: 2px; }
+
+        /* ZONE VERDICT ET SCORE */
+        .main-decision-zone {
+            background: var(--card-bg);
+            border: 1px solid var(--orange);
             border-radius: 8px;
             padding: 12px;
             text-align: center;
+            margin-bottom: 15px;
         }
-        .stat-label {
-            font-size: 0.65rem;
+        #f-overtrade-status { font-size: 1.05rem; font-weight: bold; margin-top: 4px; }
+        #f-score-badge { font-size: 0.75rem; color: var(--gold); margin-top: 2px; font-weight: bold; }
+
+        /* ADVANCED PERFORMANCE GRID */
+        .pro-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+        .metric-card {
+            background: #111519;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 2px;
+            text-align: center;
+        }
+        .metric-label { font-size: 0.55rem; color: var(--text-dim); text-transform: uppercase; }
+        .metric-val { font-weight: bold; font-size: 0.75rem; margin-top: 2px; }
+
+        /* CARTES ET FORMULAIRES */
+        .box-title {
+            font-size: 0.75rem;
             color: var(--text-dim);
             text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-        .stat-val { font-weight: bold; font-size: 1rem; color: var(--text-main); }
-        .target-reached {
-            border: 2px solid var(--gold);
-            background: rgba(255, 215, 0, 0.1);
-        }
-        .target-reached .stat-val { color: var(--gold); }
-
-        /* CAPITAL ET MM */
-        .mm-box {
-            background: #161a1e;
-            border: 1px solid var(--blue);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-        }
-        .mm-item { display: flex; flex-direction: column; gap: 5px; }
-        .mm-item label { font-size: 0.75rem; color: var(--text-dim); }
-        .mm-res { font-weight: bold; color: var(--orange); font-size: 1.1rem; }
-        .highlight { color: var(--orange); font-size: 1.3rem; }
-        .target-status { font-size: 0.8rem; font-weight: bold; margin-top: 2px; }
-
-        /* CONFIGURATEUR TERMINAL ALGORITHMIQUE */
-        .atr-intelligence-box {
-            background: #161a1e;
-            border: 1px solid var(--orange);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-        .atr-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-            margin-top: 10px;
-        }
-        @media (min-width: 992px) { .atr-grid { grid-template-columns: 1.8fr 2fr; } }
-        
-        .atr-input-zone {
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .atr-input-zone label { font-size: 0.75rem; color: var(--text-dim); font-weight: bold; text-transform: uppercase; }
-        
-        .atr-inputs-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-bottom: 5px;
-        }
-        .atr-sub-box {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            text-align: center;
-        }
-        .atr-sub-box span { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; font-weight: bold; }
-        .atr-sub-box input { text-align: center; font-weight: bold; font-size: 0.95rem; color: #fff; }
-        .atr-sub-box input.active-input { color: var(--orange); border-color: var(--orange); }
-
-        .indicators-inputs-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            border-top: 1px dashed var(--border);
-            padding-top: 10px;
-        }
-
-        .atr-filters-output {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-        .filter-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .filter-title { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 5px; }
-        .filter-status { font-weight: bold; font-size: 0.85rem; line-height: 1.2; }
-
-        /* CHECKLIST SEPARÉE */
-        .checklist-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        @media (min-width: 768px) { .checklist-container { grid-template-columns: 1fr 1fr; } }
-        .checklist-box {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 15px;
-        }
-        .checklist-box.buy { border-top: 3px solid var(--green); }
-        .checklist-box.sell { border-top: 3px solid var(--red); }
-        .check-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            margin-top: 0;
             margin-bottom: 10px;
-            font-size: 0.85rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
         }
-        .check-item input {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--orange);
-            cursor: pointer;
-        }
-        .atr-highlight-check {
-            background: rgba(255, 165, 0, 0.05);
-            padding: 6px;
-            border-radius: 6px;
-            border-left: 3px solid var(--orange);
-        }
-        .indicator-highlight-check {
-            background: rgba(0, 255, 255, 0.04);
-            padding: 6px;
-            border-radius: 6px;
-            border-left: 3px solid #00ffff;
-        }
-
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-        .visual-schema {
-            background: #161a1e;
-            padding: 12px;
-            border-radius: 6px;
-            text-align: center;
-            margin: 15px 0;
-            border-left: 3px solid var(--blue);
-            font-size: 0.8rem;
-            line-height: 1.6;
-        }
-        .scenarios { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 15px; }
-        @media (min-width: 768px) { .scenarios { grid-template-columns: 1fr 1fr; } }
-        .step-box {
-            background: #161a1e;
-            padding: 12px;
             border-radius: 8px;
-            border-left: 4px solid var(--green);
-            font-size: 0.8rem;
+            padding: 12px;
+            margin-bottom: 15px;
         }
-        .buy-box { border-left-color: var(--green); }
-        .sell-box { border-left-color: var(--red); }
-
-        /* PROTOCOLE */
-        .section-card {
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border);
-        }
-        .strategy-alert { padding: 10px; border-radius: 6px; }
-        .strategy-alert ul li { margin-bottom: 5px; }
-        .strategy-alert p { margin: 5px 0; font-size: 0.9rem; }
-        .orange-text { color: var(--orange); font-weight: bold; }
-        .green-text { color: var(--green); font-weight: bold; }
-
-        .section-box {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 50px;
-        }
-        .journal-form {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        @media (min-width: 768px) {
-            .journal-form { grid-template-columns: 1.5fr 1fr 0.8fr 1.2fr auto; }
-        }
-        button { cursor: pointer; font-weight: bold; border-radius: 6px; border: none; padding: 12px; }
+        .form-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+        .form-group label { font-size: 0.7rem; color: var(--text-dim); font-weight: bold; text-transform: uppercase; }
+        
+        .grid-3-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .grid-2-col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        
         input, select {
-            background: #161a1e;
+            background: var(--input-bg);
             color: white;
             padding: 10px;
             border-radius: 6px;
             border: 1px solid var(--border);
             font-size: 0.85rem;
+            font-weight: bold;
+            width: 100%;
         }
-        table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
-        th { background: #0000ff; color: white; padding: 10px; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid var(--border); }
-        .val-gain { color: #00ff00; font-weight: bold; }
-        .val-perte { color: #ff0000; font-weight: bold; }
-        .info-norm { font-size: 0.65rem; color: var(--text-dim); margin-top: 1px; font-style: italic; }
+        input:focus, select:focus { border-color: var(--orange); outline: none; }
+
+        /* OUTPUT DIAGNOSTICS */
+        .diagnostic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .diag-item {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            text-align: center;
+        }
+        .diag-val { font-weight: bold; font-size: 0.75rem; margin-top: 2px; }
+
+        /* CHECKLISTS */
+        .check-group { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed var(--border); }
+        .check-group:last-child { border: none; margin-bottom: 0; padding-bottom: 0; }
+        .check-title { font-size: 0.8rem; font-weight: bold; margin-bottom: 8px; }
+        .check-item { display: flex; align-items: flex-start; gap: 8px; font-size: 0.75rem; margin-bottom: 8px; color: var(--text-main); }
+        .check-item input { width: 16px; height: 16px; margin: 0; margin-top: 1px; accent-color: var(--orange); cursor: pointer; width: auto; }
+
+        /* JOURNAL */
+        .journal-form { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+        .journal-form *, .journal-form button { grid-column: span 1; }
+        .journal-form button { grid-column: span 2; background: var(--green); color: white; font-weight: bold; border: none; padding: 10px; border-radius: 6px; cursor: pointer; }
+        
+        .table-wrapper { overflow-x: auto; background: var(--input-bg); border-radius: 6px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.65rem; }
+        th { background: var(--border); color: var(--text-dim); padding: 8px; text-align: left; text-transform: uppercase; }
+        td { padding: 8px; border-bottom: 1px solid var(--border); }
+        
+        .val-gain { color: var(--green); font-weight: bold; }
+        .val-perte { color: var(--red); font-weight: bold; }
+        .target-reached { border: 1px solid var(--gold); background: rgba(242, 201, 76, 0.05); }
+        
+        .btn-action { background: #242b32; color: var(--text-main); font-weight: bold; border: 1px solid var(--border); padding: 10px; border-radius: 6px; cursor: pointer; width: 100%; transition: 0.2s; text-align: center;}
+        .btn-action:hover { background: var(--input-bg); border-color: var(--orange); }
+        .btn-danger { background: rgba(235, 87, 87, 0.1); color: var(--red); border-color: rgba(235, 87, 87, 0.3); }
+        .btn-danger:hover { background: var(--red); color: white; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>FKM ENERGY - Terminal Trading</h1>
+    <h1>FKM ENERGY TERMINAL ALGO</h1>
 
     <div class="stats-grid">
-        <div id="card-day" class="stat-card">
-            <div class="stat-label">Bilan Jour</div>
+        <div id="card-day" class="stats-card">
+            <div class="stat-label">Jour P&L</div>
             <div id="pnl-day" class="stat-val">0.00 $</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-label">Bilan Semaine</div>
-            <div id="pnl-week" class="stat-val">0.00 $</div>
+        <div class="stats-card">
+            <div class="stat-label">Capital Actuel</div>
+            <div id="current-balance" class="stat-val" style="color: var(--orange);">100.00 $</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-label">Bilan Mois</div>
-            <div id="pnl-month" class="stat-val">0.00 $</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Bilan Année</div>
-            <div id="pnl-year" class="stat-val">0.00 $</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Performance %</div>
+        <div class="stats-card">
+            <div class="stat-label">Performance</div>
             <div id="pnl-total-perc" class="stat-val">0%</div>
         </div>
     </div>
 
-    <div class="mm-box">
-        <div class="mm-item">
-            <label>Capital Initial ($)</label>
-            <input type="number" id="mm-balance-init" value="100" oninput="saveData(); renderTrades();">
+    <div class="pro-metrics-grid">
+        <div class="metric-card">
+            <div class="metric-label">Trades</div>
+            <div id="stat-total-trades" class="metric-val">0</div>
         </div>
-        <div class="mm-item">
-            <label>Objectif Jour ($)</label>
-            <input type="number" id="mm-target-day" value="20" oninput="saveData(); renderTrades();">
+        <div class="metric-card">
+            <div class="metric-label">Win Rate</div>
+            <div id="stat-winrate" class="metric-val" style="color: var(--gold);">0.0%</div>
         </div>
-        <div class="mm-item">
-            <label>CAPITAL ACTUEL ($)</label>
-            <div id="current-balance" class="mm-res highlight">100.00 $</div>
-            <div id="target-remaining" class="target-status">Reste : 20.00 $</div>
+        <div class="metric-card">
+            <div class="metric-label">Profit Factor</div>
+            <div id="stat-profit-factor" class="metric-val">-</div>
         </div>
-        <div class="mm-item">
-            <label>Risque / Trade (%)</label>
-            <select id="mm-risk-percent" onchange="renderTrades()">
-                <option value="1">1% (Prudent)</option>
-                <option value="2" selected>2% (Normal)</option>
-                <option value="5">5% (Agressif)</option>
-            </select>
-        </div>
-        <div class="mm-item">
-            <label>Perte Max ($)</label>
-            <div id="mm-allowed-loss" class="mm-res">2.00 $</div>
+        <div class="metric-card">
+            <div class="metric-label">W / BE / L</div>
+            <div id="stat-w-be-l" class="metric-val">0 / 0 / 0</div>
         </div>
     </div>
 
-    <!-- ANALYSEUR AUTOMATIQUE MULTI-TIMEFRAME & ALGORITHMIQUE -->
-    <div class="atr-intelligence-box">
-        <h3 style="color: var(--orange); font-size: 0.9rem; margin-top: 0; text-transform: uppercase; text-align: center;">⚡ CONFIGURATEUR ALGORITHMIQUE GLOBAL (ATR + SUPERTREND + VWAP)</h3>
-        <div class="atr-grid">
-            <div class="atr-input-zone">
-                <label>1. SÉLECTIONNER L'INDICE SYNTHÉTIQUE :</label>
+    <div class="main-decision-zone">
+        <div class="stat-label" style="color: var(--orange);">🛡️ ASSISTANT DE DÉCISION MOBILE</div>
+        <div id="f-overtrade-status">ANALYSE DU FLUX...</div>
+        <div id="f-score-badge">SCORE CONFLUENCE : -</div>
+    </div>
+
+    <div class="navigation-menu">
+        <button class="nav-tab active" onclick="switchMenu('tab-terminal', this)">⚡ Terminal</button>
+        <button class="nav-tab" onclick="switchMenu('tab-mm', this)">⚙️ Paramètres</button>
+        <button class="nav-tab" onclick="switchMenu('tab-checklist', this)">📋 Check-lists</button>
+        <button class="nav-tab" onclick="switchMenu('tab-journal', this)">📓 Journal</button>
+    </div>
+
+    <div id="tab-terminal" class="menu-content active">
+        <div class="card">
+            <div class="form-group">
+                <label>Actif Synthétique</label>
                 <select id="atr-asset-select" onchange="updateAssetDefaultAtr()">
+                    <option value="V10">V10 (Tick Lourd)</option>
+                    <option value="V10_1S">V10 (1s) (Stable)</option>
+                    <option value="V25" selected>V25 (Fluide)</option>
+                    <option value="V25_1S">V25 (1s) (Régulier)</option>
+                    <option value="V50">V50 (Intermédiaire)</option>
+                    <option value="V50_1S">V50 (1s) (Dynamique)</option>
                     <option value="V75">V75 (Légende)</option>
                     <option value="V100">V100 (Puissant)</option>
                     <option value="V100_1S">V100 (1s) (Rapide)</option>
                     <option value="V75_1S">V75 (1s) (Stable)</option>
-                    <option value="V10" selected>V10 (Tick Lourd)</option>
-                    <option value="V25">V25 (Fluide)</option>
-                    <option value="BOOM1000">Boom 1000 (Sell Scalp)</option>
-                    <option value="CRASH1000">Crash 1000 (Buy Scalp)</option>
+                    <option value="BOOM1000">Boom 1000</option>
+                    <option value="CRASH1000">Crash 1000</option>
                 </select>
+            </div>
 
-                <label style="margin-top: 5px;">2. ENTRER LES ATR DE VOTRE MT5 :</label>
-                <div class="atr-inputs-row">
-                    <div class="atr-sub-box">
-                        <span>ATR M1</span>
-                        <input type="number" id="live-atr" value="2.25" step="0.01" oninput="calculateAtrLogic()" class="active-input">
-                        <div id="ref-m1" class="info-norm">Norm: 2.0</div>
-                    </div>
-                    <div class="atr-sub-box">
-                        <span>ATR M15</span>
-                        <input type="number" id="live-atr-m15" value="4.50" step="0.01" oninput="calculateAtrLogic()">
-                        <div id="ref-m15" class="info-norm">Norm: 4.0</div>
-                    </div>
-                    <div class="atr-sub-box">
-                        <span>ATR H1</span>
-                        <input type="number" id="live-atr-h1" value="9.50" step="0.01" oninput="calculateAtrLogic()">
-                        <div id="ref-h1" class="info-norm">Norm: 9.0</div>
-                    </div>
+            <div class="box-title" style="margin-top: 15px;">📊 Saisie des Données ATR Live</div>
+            <div class="grid-3-col">
+                <div class="form-group">
+                    <label>ATR M1</label>
+                    <input type="number" id="live-atr" value="0.45" step="0.001" oninput="calculateAlgoLogic()">
+                </div>
+                <div class="form-group">
+                    <label>ATR M15</label>
+                    <input type="number" id="live-atr-m15" value="1.80" step="0.001" oninput="calculateAlgoLogic()">
+                </div>
+                <div class="form-group">
+                    <label>ATR H1</label>
+                    <input type="number" id="live-atr-h1" value="3.50" step="0.001" oninput="calculateAlgoLogic()">
+                </div>
+            </div>
+            <div class="grid-3-col" style="font-size: 0.6rem; color: var(--text-dim); text-align: center; margin-bottom: 10px;">
+                <div id="ref-m1">Norm: 0.5</div>
+                <div id="ref-m15">Norm: 1.8</div>
+                <div id="ref-h1">Norm: 3.5</div>
+            </div>
+
+            <div class="box-title" style="margin-top: 10px;">📈 Indicateurs MT5 Android (6 Données)</div>
+            
+            <div class="grid-3-col">
+                <div class="form-group">
+                    <label style="color:#00ffff;">Prix Actuel</label>
+                    <input type="number" id="live-price" value="300.00" step="0.01" oninput="calculateAlgoLogic()">
                 </div>
 
-                <label style="margin-top: 5px;">3. ENTRER LES DONNÉES DU MARCHÉ EN DIRECT (M1) :</label>
-                <div class="indicators-inputs-row">
-                    <div class="atr-sub-box">
-                        <span style="color:#00ffff;">PRIX ACTUEL</span>
-                        <input type="number" id="live-price" value="1000.00" step="0.01" oninput="calculateAtrLogic()" style="border-color:#00ffff;">
-                    </div>
-                    <div class="atr-sub-box">
-                        <span style="color:#00ffff;">SUPERTREND</span>
-                        <input type="number" id="live-supertrend" value="995.00" step="0.01" oninput="calculateAtrLogic()" style="border-color:#00ffff;">
-                    </div>
-                    <div class="atr-sub-box">
-                        <span style="color:#00ffff;">VWAP M1</span>
-                        <input type="number" id="live-vwap" value="992.00" step="0.01" oninput="calculateAtrLogic()" style="border-color:#00ffff;">
-                    </div>
+                <div class="form-group">
+                    <label style="color:#00ffff;">Kijun</label>
+                    <input type="number" id="live-kijun" value="299.55" step="0.01" oninput="calculateAlgoLogic()">
                 </div>
+
+                <div class="form-group">
+                    <label style="color:#00ffff;">ADX</label>
+                    <input type="number" id="live-adx" value="28" step="1" oninput="calculateAlgoLogic()">
+                </div>
+            </div>
+
+            <div class="diagnostic-grid">
+                <div class="diag-item">
+                    <div class="stat-label">Fonds HTF (>0.75)</div>
+                    <div id="f-htf-status" class="diag-val">-</div>
+                </div>
+                <div class="diag-item">
+                    <div class="stat-label">Puissance Flux (ADX)</div>
+                    <div id="f-adx-status" class="diag-val">-</div>
+                </div>
+                <div class="diag-item">
+                    <div class="stat-label">Acheteurs (Prix > Kijun)</div>
+                    <div id="f-algo-buy" class="diag-val">-</div>
+                </div>
+                <div class="diag-item">
+                    <div class="stat-label">Vendeurs (Prix &lt; Kijun)</div>
+                    <div id="f-algo-sell" class="diag-val">-</div>
+                </div>
+                <div class="diag-item" style="grid-column: span 2;">
+                    <div class="stat-label">Filtre Espace de Respiration (Kijun)</div>
+                    <div id="f-distance-status" class="diag-val">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-mm" class="menu-content">
+        <div class="card">
+            <div class="box-title">⚙️ Paramètres de Session</div>
+            <div class="grid-2-col">
+                <div class="form-group">
+                    <label>Capital ($)</label>
+                    <input type="number" id="mm-balance-init" value="100" oninput="saveData(); renderTrades();">
+                </div>
+                <div class="form-group">
+                    <label>Objectif Jour ($)</label>
+                    <input type="number" id="mm-target-day" value="20" oninput="saveData(); renderTrades();">
+                </div>
+            </div>
+            <div class="form-group" style="margin-top: 5px;">
+                <label>Risque admis par Trade</label>
+                <select id="mm-risk-percent" onchange="renderTrades()">
+                    <option value="1">1% (Prudent)</option>
+                    <option value="2" selected>2% (Normal)</option>
+                    <option value="5">5% (Agressif)</option>
+                </select>
             </div>
             
-            <div class="atr-filters-output">
-                <div class="filter-card">
-                    <div class="filter-title">📈 Validation H1 / M15</div>
-                    <div id="f-htf-status" class="filter-status">-</div>
+            <div class="diagnostic-grid" style="margin-top: 10px; margin-bottom: 15px;">
+                <div class="diag-item" style="background: var(--input-bg);">
+                    <div class="stat-label">Perte Max</div>
+                    <div id="mm-allowed-loss" class="diag-val" style="color: var(--red);">2.00 $</div>
                 </div>
-                <div class="filter-card">
-                    <div class="filter-title">🔥 Volatilité M1</div>
-                    <div id="f-vol-status" class="filter-status">-</div>
+                <div class="diag-item" style="background: var(--input-bg);">
+                    <div class="stat-label">Statut Objectif</div>
+                    <div id="target-remaining" class="diag-val" style="color: var(--gold);">Reste : 20.00 $</div>
                 </div>
-                <div class="filter-card">
-                    <div class="filter-title">🟢 Statut Algorithmique (BUY)</div>
-                    <div id="f-algo-buy" class="filter-status">-</div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px dashed var(--border); margin: 15px 0;">
+
+            <div class="box-title" style="color: var(--orange);">📌 Ajustement Évolutif des Normes ATR</div>
+            <div class="grid-3-col">
+                <div class="form-group">
+                    <label>Norm M1</label>
+                    <input type="number" id="edit-norm-m1" step="0.001">
                 </div>
-                <div class="filter-card">
-                    <div class="filter-title">🔴 Statut Algorithmique (SELL)</div>
-                    <div id="f-algo-sell" class="filter-status">-</div>
+                <div class="form-group">
+                    <label>Norm M15</label>
+                    <input type="number" id="edit-norm-m15" step="0.001">
                 </div>
-                <div class="filter-card" style="grid-column: span 2; background: rgba(255, 165, 0, 0.05); border: 1px solid var(--orange);">
-                    <div class="filter-title" style="color: var(--orange);">🛡️ DECISION DU TERMINAL</div>
-                    <div id="f-overtrade-status" class="filter-status" style="font-size: 1rem;">-</div>
+                <div class="form-group">
+                    <label>Norm H1</label>
+                    <input type="number" id="edit-norm-h1" step="0.001">
                 </div>
+            </div>
+            <div class="form-group" style="margin-top: 5px;">
+                <label>Coeff. Kijun Saisie (Ex: 0.5 à 1.0)</label>
+                <input type="number" id="edit-norm-coeff" step="0.1">
+            </div>
+            <button class="btn-action" onclick="saveAtrNormChanges()" style="margin-top: 5px; color: var(--orange); border-color: rgba(242, 153, 74, 0.4);">SAUVEGARDER LES NOUVELLES NORMES</button>
+
+            <hr style="border: 0; border-top: 1px dashed var(--border); margin: 15px 0;">
+
+            <div class="box-title" style="color: var(--blue);">💾 Sauvegarde Externe des Statistiques (JSON)</div>
+            <p style="font-size: 0.65rem; color: var(--text-dim); margin-top: -5px; margin-bottom: 10px;">Exportez ou importez vos données pour ne jamais perdre l'historique de votre journal de bord.</p>
+            <div class="grid-2-col">
+                <button class="btn-action" onclick="exportDataToJSON()" style="color: var(--green); border-color: rgba(39, 174, 96, 0.4);">📥 EXPORTER JOURNAL</button>
+                <button class="btn-action" onclick="triggerImportInput()" style="color: var(--blue); border-color: rgba(47, 128, 237, 0.4);">📤 IMPORTER JOURNAL</button>
+            </div>
+            <input type="file" id="import-file-input" style="display: none;" accept=".json" onchange="importDataFromJSON(event)">
+        </div>
+    </div>
+
+    <div id="tab-checklist" class="menu-content">
+        <div class="card" style="border-left: 4px solid var(--green);">
+            <div class="check-group">
+                <div class="check-title" style="color: var(--green);">🟢 CONFLUENCES ACHAT (BUY)</div>
+                <label class="check-item"><input type="checkbox"> RSI HTF inférieur à 70</label>
+                <label class="check-item"><input type="checkbox"> 🔍 Volatilité Globale : <span id="chk-buy-htf-atr">-</span></label>
+                <label class="check-item"><input type="checkbox"> 🏛️ Tendance Kijun : <span id="chk-buy-kijun">-</span></label>
+                <label class="check-item"><input type="checkbox"> 📈 Puissance ADX : <span id="chk-buy-adx">-</span></label>
+                <label class="check-item"><input type="checkbox"> Stochastique M1 en survente (&lt; 20)</label>
+                <label class="check-item"><input type="checkbox"> RSI M1 en confluence basse (&lt; 35)</label>
+            </div>
+            <div style="font-size: 0.7rem; color: var(--text-dim); background: var(--input-bg); padding: 8px; border-radius: 4px; text-align: center;">
+                🎯 Niveaux : <b>SL :</b> <span id="calc-buy-sl">-</span> | <b>TP :</b> <span id="calc-buy-tp">-</span> <span id="buy-tp-mode" style="color: var(--gold); font-weight: bold;"></span>
+            </div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--red);">
+            <div class="check-group">
+                <div class="check-title" style="color: var(--red);">🔴 CONFLUENCES VENTE (SELL)</div>
+                <label class="check-item"><input type="checkbox"> RSI HTF supérieur à 30</label>
+                <label class="check-item"><input type="checkbox"> 🔍 Volatilité Globale : <span id="chk-sell-htf-atr">-</span></label>
+                <label class="check-item"><input type="checkbox"> 🏛️ Tendance Kijun : <span id="chk-sell-kijun">-</span></label>
+                <label class="check-item"><input type="checkbox"> 📈 Puissance ADX : <span id="chk-sell-adx">-</span></label>
+                <label class="check-item"><input type="checkbox"> Stochastique M1 en surachat (&gt; 80)</label>
+                <label class="check-item"><input type="checkbox"> RSI M1 en confluence haute (&gt; 65)</label>
+            </div>
+            <div style="font-size: 0.7rem; color: var(--text-dim); background: var(--input-bg); padding: 8px; border-radius: 4px; text-align: center;">
+                🎯 Niveaux : <b>SL :</b> <span id="calc-sell-sl">-</span> | <b>TP :</b> <span id="calc-sell-tp">-</span> <span id="sell-tp-mode" style="color: var(--gold); font-weight: bold;"></span>
             </div>
         </div>
     </div>
 
-    <div class="checklist-container">
-        <div class="checklist-box buy">
-            <h3 style="color: var(--green); font-size: 0.9rem; margin-top: 0; text-transform: uppercase;">🟢 CHECK-LIST ACHAT (BUY)</h3>
-            <label class="check-item"><input type="checkbox" class="t-check"> HTF (H1/M15) : RSI est inférieur à 70</label>
-            <label class="check-item atr-highlight-check"><input type="checkbox" class="t-check"> 🔍 <b>Filtre HTF (H1/M15) ATR :</b> <span id="chk-buy-htf-atr" style="font-weight:bold;">Calcul...</span></label>
-            <label class="check-item indicator-highlight-check"><input type="checkbox" class="t-check"> ⚡ <b>Supertrend M1 :</b> <span id="chk-buy-supertrend" style="font-weight:bold;">Calcul...</span></label>
-            <label class="check-item indicator-highlight-check"><input type="checkbox" class="t-check"> 🏛️ <b>VWAP M1 :</b> <span id="chk-buy-vwap" style="font-weight:bold;">Calcul...</span></label>
-            <label class="check-item"><input type="checkbox" class="t-check"> M1 : Stochastique en survente (Sous la zone 20)</label>
-            <label class="check-item"><input type="checkbox" class="t-check"> M1 : RSI en confluence basse (Sous la zone 35)</label>
-            <label class="check-item atr-highlight-check"><input type="checkbox" class="t-check"> ⚙️ <b>Filtre M1 ATR :</b> <span id="chk-buy-m1-atr" style="font-weight:bold;">Calcul...</span></label>
-            <label class="check-item"><input type="checkbox" class="t-check"> M1 : SL à <span id="calc-buy-sl" style="color:var(--orange); font-weight:bold;">-</span> | TP à <span id="calc-buy-tp" style="color:var(--green); font-weight:bold;">-</span></label>
-        </div>
-
-        <div class="checklist-box sell">
-            <h3 style="color: var(--red); font-size: 0.9rem; margin-top: 0; text-transform: uppercase;">🔴 CHECK-LIST VENTE (SELL)</h3>
-            <label class="check-item"><input type="checkbox" class="t-check"> HTF (H1/M15) : RSI est supérieur à 30</label>
-            <label class="check-item atr-highlight-check"><input type="checkbox" class="t-check"> 🔍 <b>Filtre HTF (H1/M15) ATR :</b> <span id="chk-sell-htf-atr" style="font-weight:bold;">Calcul...</span></label>
-            <label class="check-item indicator-highlight-check"><input type="checkbox" class="t-check"> ⚡ <b>Supertrend M1 :</b> <span id="chk-sell-supertrend" style="font-weight:bold;">Calcul...</span></label>
-            <label class="check-item indicator-highlight-check"><input type="checkbox" class="t-check"> 🏛️ <b>VWAP M1 :</b> <span id="chk-sell-vwap" style="font-weight:bold;">Calcul...</span></label>
-            <label class="check-item"><input type="checkbox" class="t-check"> M1 : Stochastique en surachat (Au-dessus de la zone 80)</label>
-            <label class="check-item"><input type="checkbox" class="t-check"> M1 : RSI en confluence haute (Au-dessus de la zone 65)</label>
-            <label class="check-item atr-highlight-check"><input type="checkbox" class="t-check"> ⚙️ <b>Filtre M1 ATR :</b> <span id="chk-sell-m1-atr" style="font-weight:bold;">Calcul...</span></label>
-            <label class="check-item"><input type="checkbox" class="t-check"> M1 : SL à <span id="calc-sell-sl" style="color:var(--orange); font-weight:bold;">-</span> | TP à <span id="calc-sell-tp" style="color:var(--red); font-weight:bold;">-</span></label>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="visual-schema">
-            <b>FILTRE DIRECTIONNEL :</b> Le prix doit être du même côté du Supertrend ET du VWAP.<br>
-            <b>ACHAT :</b> Prix supérieur à Supertrend AND Prix supérieur à VWAP | <b>VENTE :</b> Prix inférieur à Supertrend AND Prix inférieur à VWAP.
-        </div>
-        <div class="scenarios">
-            <div class="step-box buy-box">
-                <strong>🟢 CONFIRMATION TRADING - ACHAT</strong><br>ATR Valides + Prix > Supertrend + Prix > VWAP + RSI/Stoch bas.
+    <div id="tab-journal" class="menu-content">
+        <div class="card">
+            <div class="box-title">📓 Enregistrer un Trade</div>
+            <div class="journal-form">
+                <select id="j-market">
+                    <option value="V10">V10</option>
+                    <option value="V10 (1s)">V10 (1s)</option>
+                    <option value="V25">V25</option>
+                    <option value="V25 (1s)">V25 (1s)</option>
+                    <option value="V50">V50</option>
+                    <option value="V50 (1s)">V50 (1s)</option>
+                    <option value="V75">V75</option>
+                    <option value="V100">V100</option>
+                    <option value="V100 (1s)">V100 (1s)</option>
+                    <option value="V75 (1s)">V75 (1s)</option>
+                    <option value="Boom 1000">Boom 1000</option>
+                    <option value="Crash 1000">Crash 1000</option>
+                </select>
+                <select id="j-result">
+                    <option value="Gain">Gain (TP)</option>
+                    <option value="Perte">Perte (SL)</option>
+                    <option value="BE">Breakeven</option>
+                </select>
+                <input type="number" id="j-pnl" placeholder="P&L ($) ex: 8.50">
+                <select id="j-note">
+                    <option value="Confluence Totale">Confluence Totale</option>
+                    <option value="Rejet Kijun">Rejet Kijun</option>
+                    <option value="Impulsion ADX">Impulsion ADX</option>
+                    <option value="Sortie Impatience">Sortie Impatience</option>
+                </select>
+                <button id="btn-submit-trade" onclick="addTrade()">VALIDER LE TRADE</button>
             </div>
-            <div class="step-box sell-box">
-                <strong>🔴 CONFIRMATION TRADING - VENTE</strong><br>ATR Valides + Prix < Supertrend + Prix < VWAP + RSI/Stoch haut.
-            </div>
-        </div>
 
-        <div class="section-card" style="border-top: 3px solid #ffaa00; background: #1c2128;">
-            <h3 style="color: #ffaa00; margin-top: 0;">📉 PROTOCOLE DE CLÔTURE</h3>
-            <div class="strategy-alert" style="border-left: 4px solid #ff0000; background: #252a31; margin-bottom: 10px;">
-                <p><strong>1. SORTIE DE SÉCURITÉ (STOP LOSS OPTIMISÉ & ATR)</strong></p>
-                <ul style="font-size: 0.85rem; color: #8b949e; padding-left: 20px;">
-                    <li><strong>Achat / Vente :</strong> Clôture immédiate si le prix atteint <span class="orange-text">Entry ± (2x ATR M1)</span> pour absorber le bruit du marché.</li>
-                    <li><strong>Invalidation Algos :</strong> Clôture anticipée si le Supertrend change de couleur à l'opposé de ta position.</li>
-                    <li><strong>Hard Stop :</strong> Toujours respecter la Perte Max stricte calculée automatiquement sur ton capital.</li>
-                </ul>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Heure</th>
+                            <th>Indice</th>
+                            <th>Result</th>
+                            <th>P&L</th>
+                            <th>Note</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="journal-body"></tbody>
+                </table>
             </div>
-            <div class="strategy-alert" style="border-left: 4px solid #00ff00; background: #252a31;">
-                <p><strong>2. PRISE DE PROFIT (TAKE PROFIT OPTIMISÉ & ATR)</strong></p>
-                <ul style="font-size: 0.85rem; color: #8b949e; padding-left: 20px;">
-                    <li><strong>Objectif Fixe Volatilité :</strong> Viser un objectif mathématique à <span class="green-text">3x ou 4x ATR M1</span> pour un excellent ratio risque/rendement.</li>
-                    <li><strong>Sécurisation ATR :</strong> Dès que le trade avance en ta faveur à hauteur de <span class="green-text">0.50 ou 1x ATR M1</span>, protège le trade à Breakeven (BE).</li>
-                </ul>
-            </div>
+            <button onclick="clearStats()" class="btn-action btn-danger" style="margin-top: 10px; padding: 6px; font-size: 0.6rem; width: auto; border-radius: 4px;">Effacer l'historique local</button>
         </div>
-    </div>
-
-    <div class="section-box">
-        <h2 style="color: var(--orange); font-size: 0.9rem; text-align: center; margin-top: 0;">📓 JOURNAL DE BORD</h2>
-        <div class="journal-form">
-            <select id="j-market">
-                <option value="V75">V75 (Légende)</option>
-                <option value="V100">V100 (Puissant)</option>
-                <option value="V100 (1s)">V100 (1s) (Rapide)</option>
-                <option value="V75 (1s)">V75 (1s) (Stable)</option>
-                <option value="V10">V10 (Tick Lourd)</option>
-                <option value="V25">V25 (Fluide)</option>
-                <option value="Boom 1000">Boom 1000 (Sell Scalp)</option>
-                <option value="Crash 1000">Crash 1000 (Buy Scalp)</option>
-            </select>
-            <select id="j-result">
-                <option value="Gain">Gain (TP)</option>
-                <option value="Perte">Perte (SL)</option>
-                <option value="BE">Breakeven</option>
-            </select>
-            <input type="number" id="j-pnl" placeholder="P&L $ (ex: 15.00)">
-            <select id="j-note">
-                <option value="Confluence Totale">Confluence Totale</option>
-                <option value="Rejet Propre">Rejet Propre</option>
-                <option value="Spike Surprise">Spike Surprise</option>
-                <option value="Sortie Impatience">Sortie Impatience</option>
-            </select>
-            <button onclick="addTrade()" style="background: var(--green); color: black;">AJOUTER</button>
-        </div>
-
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="padding: 10px;">Date/Heure</th>
-                        <th>Indice</th>
-                        <th>Résultat</th>
-                        <th>P&L ($)</th>
-                        <th>Note</th>
-                        <th>X</th>
-                    </tr>
-                </thead>
-                <tbody id="journal-body"></tbody>
-            </table>
-        </div>
-        <button onclick="clearStats()" style="background: #333; color: white; margin-top: 15px; padding: 5px 10px; font-size: 0.65rem;">Reset Historique</button>
     </div>
 </div>
 
 <script>
-    // Base de données complète des ATR standards sur 3 unités de temps
-    const MTF_ATR_DATABASE = {
-        "V75": { m1: 140.0, m15: 540.0, h1: 1100.0, price: 250000 },
-        "V100": { m1: 11.5, m15: 45.0, h1: 90.0, price: 3500 },
-        "V100_1S": { m1: 2.5, m15: 9.8, h1: 20.0, price: 1500 },
-        "V75_1S": { m1: 6.8, m15: 26.0, h1: 52.0, price: 8500 },
-        "V10": { m1: 2.0, m15: 4.0, h1: 9.0, price: 1000 },
-        "V25": { m1: 0.45, m15: 1.8, h1: 3.5, price: 300 },
-        "BOOM1000": { m1: 0.85, m15: 3.2, h1: 6.5, price: 12000 },
-        "CRASH1000": { m1: 0.95, m15: 3.8, h1: 7.8, price: 8000 }
+    const DEFAULT_ATR_DATABASE = {
+        "V10": { m1: 2.0, m15: 4.0, h1: 9.0, price: 1000, kijun: 998, coeff: 0.7 },
+        "V10_1S": { m1: 0.15, m15: 0.5, h1: 1.2, price: 250, kijun: 249.8, coeff: 0.5 },
+        "V25": { m1: 0.45, m15: 1.8, h1: 3.5, price: 300, kijun: 299.5, coeff: 0.5 },
+        "V25_1S": { m1: 0.05, m15: 0.2, h1: 0.5, price: 180, kijun: 179.9, coeff: 0.5 },
+        "V50": { m1: 3.5, m15: 12.0, h1: 28.0, price: 4500, kijun: 4492, coeff: 0.7 },
+        "V50_1S": { m1: 0.8, m15: 2.5, h1: 5.0, price: 1200, kijun: 1198, coeff: 0.7 },
+        "V75": { m1: 140.0, m15: 540.0, h1: 1100.0, price: 250000, kijun: 249800, coeff: 0.8 },
+        "V100": { m1: 11.5, m15: 45.0, h1: 90.0, price: 3500, kijun: 3490, coeff: 0.8 },
+        "V100_1S": { m1: 2.5, m15: 9.8, h1: 20.0, price: 1500, kijun: 1498, coeff: 0.7 },
+        "V75_1S": { m1: 6.8, m15: 26.0, h1: 52.0, price: 8500, kijun: 8490, coeff: 0.8 },
+        "BOOM1000": { m1: 0.85, m15: 3.2, h1: 6.5, price: 12000, kijun: 11990, coeff: 1.0 },
+        "CRASH1000": { m1: 0.95, m15: 3.8, h1: 7.8, price: 8000, kijun: 8010, coeff: 1.0 }
     };
+
+    // UNIFORMISATION UNISSON SUR LA VERSION V23
+    let MTF_ATR_DATABASE = JSON.parse(localStorage.getItem('fkm_v23_atr_db')) || DEFAULT_ATR_DATABASE;
+
+    function switchMenu(tabId, buttonElement) {
+        document.querySelectorAll('.menu-content').forEach(content => content.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        buttonElement.classList.add('active');
+        
+        if(tabId === 'tab-mm') loadAssetEditorValues();
+    }
+
+    function loadAssetEditorValues() {
+        const selectedAsset = document.getElementById('atr-asset-select').value;
+        const db = MTF_ATR_DATABASE[selectedAsset];
+        document.getElementById('edit-norm-m1').value = db.m1;
+        document.getElementById('edit-norm-m15').value = db.m15;
+        document.getElementById('edit-norm-h1').value = db.h1;
+        document.getElementById('edit-norm-coeff').value = db.coeff || 0.5;
+    }
+
+    function saveAtrNormChanges() {
+        const selectedAsset = document.getElementById('atr-asset-select').value;
+        MTF_ATR_DATABASE[selectedAsset] = {
+            m1: parseFloat(document.getElementById('edit-norm-m1').value),
+            m15: parseFloat(document.getElementById('edit-norm-m15').value),
+            h1: parseFloat(document.getElementById('edit-norm-h1').value),
+            coeff: parseFloat(document.getElementById('edit-norm-coeff').value),
+            price: parseFloat(document.getElementById('live-price').value),
+            kijun: parseFloat(document.getElementById('live-kijun').value)
+        };
+        localStorage.setItem('fkm_v23_atr_db', JSON.stringify(MTF_ATR_DATABASE));
+        alert(`Normes pour ${selectedAsset} synchronisées !`);
+        
+        document.getElementById('ref-m1').innerText = "Norm: " + MTF_ATR_DATABASE[selectedAsset].m1.toFixed(2);
+        document.getElementById('ref-m15').innerText = "Norm: " + MTF_ATR_DATABASE[selectedAsset].m15.toFixed(2);
+        document.getElementById('ref-h1').innerText = "Norm: " + MTF_ATR_DATABASE[selectedAsset].h1.toFixed(2);
+        
+        calculateAlgoLogic();
+    }
 
     function updateAssetDefaultAtr() {
         const selectedAsset = document.getElementById('atr-asset-select').value;
         const db = MTF_ATR_DATABASE[selectedAsset];
         
-        // Mettre à jour les labels d'aide
-        document.getElementById('ref-m1').innerText = "Norm: " + db.m1.toFixed(1);
-        document.getElementById('ref-m15').innerText = "Norm: " + db.m15.toFixed(1);
-        document.getElementById('ref-h1').innerText = "Norm: " + db.h1.toFixed(1);
+        document.getElementById('ref-m1').innerText = "Norm: " + db.m1.toFixed(2);
+        document.getElementById('ref-m15').innerText = "Norm: " + db.m15.toFixed(2);
+        document.getElementById('ref-h1').innerText = "Norm: " + db.h1.toFixed(2);
         
-        // Remplir automatiquement les inputs ATR
         document.getElementById('live-atr').value = db.m1;
         document.getElementById('live-atr-m15').value = db.m15;
         document.getElementById('live-atr-h1').value = db.h1;
         
-        // Remplir des valeurs par défaut réalistes pour le prix, supertrend et VWAP selon l'actif
         document.getElementById('live-price').value = db.price;
-        document.getElementById('live-supertrend').value = (db.price - (db.m1 * 1.5)).toFixed(2);
-        document.getElementById('live-vwap').value = (db.price - db.m1).toFixed(2);
+        document.getElementById('live-kijun').value = db.kijun;
+        document.getElementById('live-adx').value = 28; 
         
-        // Sync Journal
         const journalMarket = document.getElementById('j-market');
-        if(selectedAsset === "V100_1S") journalMarket.value = "V100 (1s)";
-        else if(selectedAsset === "V75_1S") journalMarket.value = "V75 (1s)";
-        else if(selectedAsset === "BOOM1000") journalMarket.value = "Boom 1000";
-        else if(selectedAsset === "CRASH1000") journalMarket.value = "Crash 1000";
-        else journalMarket.value = selectedAsset;
+        const namesMapping = {
+            "V10_1S": "V10 (1s)",
+            "V25_1S": "V25 (1s)",
+            "V50": "V50",
+            "V50_1S": "V50 (1s)",
+            "V100_1S": "V100 (1s)",
+            "V75_1S": "V75 (1s)",
+            "BOOM1000": "Boom 1000",
+            "CRASH1000": "Crash 1000"
+        };
+        
+        journalMarket.value = namesMapping[selectedAsset] || selectedAsset;
+        if(document.getElementById('tab-mm').classList.contains('active')) loadAssetEditorValues();
 
-        calculateAtrLogic();
+        calculateAlgoLogic();
     }
 
-    function calculateAtrLogic() {
+    function calculateAlgoLogic() {
         const selectedAsset = document.getElementById('atr-asset-select').value;
         const db = MTF_ATR_DATABASE[selectedAsset];
 
@@ -566,181 +587,221 @@
         const m15Live = parseFloat(document.getElementById('live-atr-m15').value || 0);
         const h1Live = parseFloat(document.getElementById('live-atr-h1').value || 0);
 
-        // Données des indicateurs directes
         const price = parseFloat(document.getElementById('live-price').value || 0);
-        const supertrend = parseFloat(document.getElementById('live-supertrend').value || 0);
-        const vwap = parseFloat(document.getElementById('live-vwap').value || 0);
+        const kijun = parseFloat(document.getElementById('live-kijun').value || 0);
+        const adx = parseInt(document.getElementById('live-adx').value || 0);
 
-        // Sorties HTML des filtres de statut
         const fHtf = document.getElementById('f-htf-status');
-        const fVol = document.getElementById('f-vol-status');
+        const fAdx = document.getElementById('f-adx-status');
         const fAlgoBuy = document.getElementById('f-algo-buy');
         const fAlgoSell = document.getElementById('f-algo-sell');
+        const fDistance = document.getElementById('f-distance-status');
         const fOvertrade = document.getElementById('f-overtrade-status');
+        const fScore = document.getElementById('f-score-badge');
 
-        // Éléments des check-lists
-        const chkBuyHtf = document.getElementById('chk-buy-htf-atr');
-        const chkBuyM1 = document.getElementById('chk-buy-m1-atr');
-        const chkBuySt = document.getElementById('chk-buy-supertrend');
-        const chkBuyVwap = document.getElementById('chk-buy-vwap');
+        // PROTECTION BLOQUANTE ET CRITIQUE : PRIX PARFAITEMENT SUR KIJUN
+        if (price === kijun) {
+            fOvertrade.innerText = "⚠️ PRIX SUR KIJUN (INÉVALUABLE)";
+            fOvertrade.style.color = "var(--orange)";
+            fScore.innerText = "SCORE CONFLUENCE : 0/100";
+            fAlgoBuy.innerText = "❌ BLOCK"; fAlgoBuy.style.color = "var(--orange)";
+            fAlgoSell.innerText = "❌ BLOCK"; fAlgoSell.style.color = "var(--orange)";
+            return;
+        }
 
-        const chkSellHtf = document.getElementById('chk-sell-htf-atr');
-        const chkSellM1 = document.getElementById('chk-sell-m1-atr');
-        const chkSellSt = document.getElementById('chk-sell-supertrend');
-        const chkSellVwap = document.getElementById('chk-sell-vwap');
+        // VERROUILLAGE SÉCURITÉ : VÉRIFICATION DU RETOUR D'OBJECTIF DE SESSION JOURNALIER
+        const trades = JSON.parse(localStorage.getItem('fkm_v23_trades') || '[]');
+        const targetDay = parseFloat(localStorage.getItem('fkm_v23_target') || 20);
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        let dayPnl = 0;
+        trades.forEach(t => { if(t.timestamp >= startOfDay) dayPnl += t.pnl; });
 
-        // Calculs dynamiques des cibles SL/TP
-        document.getElementById('calc-buy-sl').innerText = "Entry - " + (2 * m1Live).toFixed(2);
-        document.getElementById('calc-buy-tp').innerText = "Entry + " + (3 * m1Live).toFixed(2);
-        document.getElementById('calc-sell-sl').innerText = "Entry + " + (2 * m1Live).toFixed(2);
-        document.getElementById('calc-sell-tp').innerText = "Entry - " + (3 * m1Live).toFixed(2);
+        if (dayPnl >= targetDay && targetDay > 0) {
+            fOvertrade.innerText = "🏆 SESSION TERMINÉE (OBJECTIF ATTEINT)";
+            fOvertrade.style.color = "var(--gold)";
+            fScore.innerText = "PROTECTION DU CAPITAL ACTIVE";
+            return;
+        }
 
-        // 1. EVALUATION ATR MULTI-TIMEFRAME
+        let score = 0;
+
+        // 1. Analyse Volatilité Fonds HTF
         const ratioM15 = m15Live / db.m15;
         const ratioH1 = h1Live / db.h1;
-        let htfValid = true;
+        let htfValid = ratioM15 >= 0.75 && ratioH1 >= 0.75;
 
-        if (ratioM15 < 0.65 || ratioH1 < 0.65) {
-            htfValid = false;
-            fHtf.innerText = "DANGER BAISSE"; fHtf.style.color = "#ff0000";
-            chkBuyHtf.innerText = "🔴 BLOQUÉ (Fonds faibles)"; chkBuyHtf.style.color = "#ff0000";
-            chkSellHtf.innerText = "🔴 BLOQUÉ (Fonds faibles)"; chkSellHtf.style.color = "#ff0000";
+        if (htfValid) {
+            score += 30;
+            fHtf.innerText = "✅ VOLATILITÉ ROBUSTE"; fHtf.style.color = "var(--green)";
         } else {
-            fHtf.innerText = "SÉCURISÉ OK"; fHtf.style.color = "#00ff00";
-            chkBuyHtf.innerText = "🟢 VALIDE (Fonds sains)"; chkBuyHtf.style.color = "#00ff00";
-            chkSellHtf.innerText = "🟢 VALIDE (Fonds sains)"; chkSellHtf.style.color = "#00ff00";
+            fHtf.innerText = "🚨 COMPRESSION HTF"; fHtf.style.color = "var(--red)";
         }
 
-        const ratioM1 = m1Live / db.m1;
-        let m1Valid = "NORMAL";
+        // 2. Filtre d'Espace de Respiration Kijun
+        const distanceKijun = Math.abs(price - kijun);
+        const dynamicCoeff = db.coeff || 0.5; 
+        const minDistance = m1Live * dynamicCoeff;
+        let distanceValid = distanceKijun >= minDistance;
 
-        if (ratioM1 < 0.65) {
-            m1Valid = "MORT";
-            fVol.innerText = "MORT / STATIONNAIRE"; fVol.style.color = "#ff0000";
-            chkBuyM1.innerText = "🔴 HORS-JEU (Pas d'activité)"; chkBuyM1.style.color = "#ff0000";
-            chkSellM1.innerText = "🔴 HORS-JEU (Pas d'activité)"; chkSellM1.style.color = "#ff0000";
-        } else if (ratioM1 >= 0.65 && ratioM1 <= 1.35) {
-            m1Valid = "NORMAL";
-            fVol.innerText = "CLASSIQUE STABLE"; fVol.style.color = "#ffa500";
-            chkBuyM1.innerText = "🟢 ACCORDÉ (Volatilité stable)"; chkBuyM1.style.color = "#ffa500";
-            chkSellM1.innerText = "🟢 ACCORDÉ (Volatilité stable)"; chkSellM1.style.color = "#ffa500";
+        if (distanceValid) {
+            score += 20;
+            fDistance.innerText = `Dist: ${distanceKijun.toFixed(2)} >= Seuil [${dynamicCoeff}xATR]: ${minDistance.toFixed(2)} (OK)`;
+            fDistance.style.color = "var(--green)";
         } else {
-            m1Valid = "IDEAL";
-            fVol.innerText = "EXPLOSIF / FLUIDE"; fVol.style.color = "#00ff00";
-            chkBuyM1.innerText = "🔥 PARFAIT (Fortes impulsions)"; chkBuyM1.style.color = "#00ff00";
-            chkSellM1.innerText = "🔥 PARFAIT (Fortes impulsions)"; chkSellM1.style.color = "#00ff00";
+            fDistance.innerText = `Dist: ${distanceKijun.toFixed(2)} < Seuil [${dynamicCoeff}xATR]: ${minDistance.toFixed(2)} (Bruit/Collé)`;
+            fDistance.style.color = "var(--orange)";
         }
 
-        // 2. LOGIQUE MATHÉMATIQUE APPLIQUÉE SUR LES INDICATEURS (SUPERTREND + VWAP)
-        let buyAlgoOk = false;
-        let sellAlgoOk = false;
+        // 3. Force de la Tendance ADX
+        let adxValid = adx >= 25;
+        let adxStrong = adx > 30;
+        let adxHyperFlux = adx > 35;
 
-        // Condition d'achat (Prix > Supertrend ET Prix > VWAP)
-        if (price > supertrend && price > vwap) {
-            buyAlgoOk = true;
-            fAlgoBuy.innerText = "🟢 ALIGNEMENT HAUSSIER"; fAlgoBuy.style.color = "#00ff00";
-            chkBuySt.innerText = "🟢 ACCORDÉ (Prix > ST)"; chkBuySt.style.color = "#00ff00";
-            chkBuyVwap.innerText = "🟢 ACCORDÉ (Prix > VWAP)"; chkBuyVwap.style.color = "#00ff00";
+        if (!adxValid) {
+            fAdx.innerText = "📉 BRUIT / NO TREND (<25)"; fAdx.style.color = "var(--red)";
+        } else if (adxValid && !adxStrong) {
+            score += 15;
+            fAdx.innerText = "⚡ FLUX MODÉRÉ (25-30)"; fAdx.style.color = "var(--blue)";
         } else {
-            fAlgoBuy.innerText = "🔴 STRATÉGIE INVALIDE"; fAlgoBuy.style.color = "#ff0000";
-            chkBuySt.innerText = price > supertrend ? "🟢 OK (Prix > ST)" : "🔴 BLOQUÉ (Prix < ST)";
-            chkBuySt.style.color = price > supertrend ? "#00ff00" : "#ff0000";
-            chkBuyVwap.innerText = price > vwap ? "🟢 OK (Prix > VWAP)" : "🔴 BLOQUÉ (Prix < VWAP)";
-            chkBuyVwap.style.color = price > vwap ? "#00ff00" : "#ff0000";
+            score += 30;
+            fAdx.innerText = adxHyperFlux ? "🔥 HYPER-FLUX (>35)" : "🔥 TENDANCE FORTE (>30)";
+            fAdx.style.color = "var(--green)";
         }
 
-        // Condition de vente (Prix < Supertrend ET Prix < VWAP)
-        if (price < supertrend && price < vwap) {
-            sellAlgoOk = true;
-            fAlgoSell.innerText = "🔴 ALIGNEMENT BAISSIER"; fAlgoSell.style.color = "#00ff00"; // Texte vert car filtre OK pour vente
-            chkSellSt.innerText = "🟢 ACCORDÉ (Prix < ST)"; chkSellSt.style.color = "#00ff00";
-            chkSellVwap.innerText = "🟢 ACCORDÉ (Prix < VWAP)"; chkSellVwap.style.color = "#00ff00";
-        } else {
-            fAlgoSell.innerText = "❌ STRATÉGIE INVALIDE"; fAlgoSell.style.color = "#ff0000";
-            chkSellSt.innerText = price < supertrend ? "🟢 OK (Prix < ST)" : "🔴 BLOQUÉ (Prix > ST)";
-            chkSellSt.style.color = price < supertrend ? "#00ff00" : "#ff0000";
-            chkSellVwap.innerText = price < vwap ? "🟢 OK (Prix < VWAP)" : "🔴 BLOQUÉ (Prix > VWAP)";
-            chkSellVwap.style.color = price < vwap ? "#00ff00" : "#ff0000";
+        // 4. Alignement Structural Univoque
+        let buyDirectionOk = price > kijun;
+        let sellDirectionOk = price < kijun;
+
+        if (buyDirectionOk) {
+            score += 20;
+            fAlgoBuy.innerText = "🟢 ACCORD HAUSSIER"; fAlgoBuy.style.color = "var(--green)";
+            fAlgoSell.innerText = "❌ INVALIDE"; fAlgoSell.style.color = "var(--red)";
+        } else if (sellDirectionOk) {
+            score += 20;
+            fAlgoSell.innerText = "🔴 ACCORD BAISSIER"; fAlgoSell.style.color = "var(--green)";
+            fAlgoBuy.innerText = "❌ INVALIDE"; fAlgoBuy.style.color = "var(--red)";
         }
 
-        // 3. SYNTHÈSE ET ARBITRAGE DU TERMINAL
-        if (!htfValid || m1Valid === "MORT") {
-            fOvertrade.innerText = "🛑 BLOCAGE VOLATILITÉ (NO TRADE)"; fOvertrade.style.color = "#ff0000";
+        // 5. Ratio de TP Dynamique selon la puissance
+        let tpMultiplier = adxHyperFlux ? 4 : 3;
+        document.getElementById('buy-tp-mode').innerText = adxHyperFlux ? " (ADX+ : TP étendu 1:2)" : "";
+        document.getElementById('sell-tp-mode').innerText = adxHyperFlux ? " (ADX+ : TP étendu 1:2)" : "";
+
+        document.getElementById('calc-buy-sl').innerText = (price - (2 * m1Live)).toFixed(2);
+        document.getElementById('calc-buy-tp').innerText = (price + (tpMultiplier * m1Live)).toFixed(2);
+        document.getElementById('calc-sell-sl').innerText = (price + (2 * m1Live)).toFixed(2);
+        document.getElementById('calc-sell-tp').innerText = (price - (tpMultiplier * m1Live)).toFixed(2);
+
+        fScore.innerText = `SCORE CONFLUENCE : ${score}/100`;
+
+        if (score >= 80) {
+            fOvertrade.innerText = buyDirectionOk ? `🚀 ACHAT FORT (Grade A : ${score}%)` : `💥 VENTE FORTE (Grade A : ${score}%)`;
+            fOvertrade.style.color = score >= 80 && buyDirectionOk ? "var(--green)" : "var(--red)";
+        } else if (score >= 70 && score < 80) {
+            fOvertrade.innerText = buyDirectionOk ? `👍 ACHAT MODÉRÉ (Grade B : ${score}%)` : `👎 VENTE MODÉRÉE (Grade B : ${score}%)`;
+            fOvertrade.style.color = buyDirectionOk ? "var(--blue)" : "var(--orange)";
         } else {
-            if (buyAlgoOk && m1Valid === "IDEAL") {
-                fOvertrade.innerText = "🚀 FEU VERT ACHAT TOTAL (PROFIT IMMÉDIAT)"; fOvertrade.style.color = "#00ff00";
-            } else if (sellAlgoOk && m1Valid === "IDEAL") {
-                fOvertrade.innerText = "💥 FEU VERT VENTE TOTALE (PROFIT IMMÉDIAT)"; fOvertrade.style.color = "#00ff00";
-            } else if (buyAlgoOk && m1Valid === "NORMAL") {
-                fOvertrade.innerText = "👍 ACCORD ACHAT (MARCHÉ TRADITIONNEL)"; fOvertrade.style.color = "#ffa500";
-            } else if (sellAlgoOk && m1Valid === "NORMAL") {
-                fOvertrade.innerText = "👎 ACCORD VENTE (MARCHÉ TRADITIONNEL)"; fOvertrade.style.color = "#ffa500";
-            } else {
-                fOvertrade.innerText = "⌛ EN ATTENTE D'ALIGNEMENT DES FLUX"; fOvertrade.style.color = "var(--text-dim)";
-            }
+            fOvertrade.innerText = `🛑 NO TRADE (Score ${score}% < Seuil Requis 70%)`;
+            fOvertrade.style.color = "var(--red)";
         }
+        
+        // Mise à jour rapide des indicateurs textuels des check-lists
+        document.getElementById('chk-buy-htf-atr').innerText = htfValid ? "✅ DU FLUX" : "❌ SANS VOLA";
+        document.getElementById('chk-sell-htf-atr').innerText = htfValid ? "✅ DU FLUX" : "❌ SANS VOLA";
+        document.getElementById('chk-buy-kijun').innerText = buyDirectionOk ? "✅ VALIDÉ" : "❌ CONTRE-TREND";
+        document.getElementById('chk-sell-kijun').innerText = sellDirectionOk ? "✅ VALIDÉ" : "❌ CONTRE-TREND";
+        document.getElementById('chk-buy-adx').innerText = adx >= 25 ? `✅ CONFIRMÉ (${adx})` : `❌ BRUIT (${adx})`;
+        document.getElementById('chk-sell-adx').innerText = adx >= 25 ? `✅ CONFIRMÉ (${adx})` : `❌ BRUIT (${adx})`;
     }
 
     function saveData() {
-        localStorage.setItem('fkm_init_v22', document.getElementById('mm-balance-init').value);
-        localStorage.setItem('fkm_target_v22', document.getElementById('mm-target-day').value);
+        localStorage.setItem('fkm_v23_init', document.getElementById('mm-balance-init').value);
+        localStorage.setItem('fkm_v23_target', document.getElementById('mm-target-day').value);
     }
 
     function addTrade() {
-        const trades = JSON.parse(localStorage.getItem('fkm_trades_v22') || '[]');
+        const trades = JSON.parse(localStorage.getItem('fkm_v23_trades') || '[]');
+        const targetDay = parseFloat(localStorage.getItem('fkm_v23_target') || 20);
+        
+        // Blocage physique du bouton de validation si objectif atteint
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        let dayPnl = 0;
+        trades.forEach(t => { if(t.timestamp >= startOfDay) dayPnl += t.pnl; });
+
+        if (dayPnl >= targetDay && targetDay > 0) {
+            alert("Discipline FKM ENERGY : Objectif atteint. Enregistrement verrouillé !");
+            return;
+        }
+
         const pnlInput = document.getElementById('j-pnl').value;
         if(pnlInput === "") return;
         
         const pnl = parseFloat(pnlInput);
         const res = document.getElementById('j-result').value;
-        const now = new Date();
+        
         trades.push({
             timestamp: now.getTime(),
             dateStr: now.toLocaleDateString('fr-FR'),
             timeStr: now.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}),
             market: document.getElementById('j-market').value,
             res: res,
-            pnl: res === 'Perte' ? -Math.abs(pnl) : Math.abs(pnl),
+            pnl: res === 'Perte' ? -Math.abs(pnl) : (res === 'BE' ? 0.00 : Math.abs(pnl)), // CORRECTION : BE FAIT TRÈS STRICTEMENT 0.00 $
             note: document.getElementById('j-note').value
         });
-        localStorage.setItem('fkm_trades_v22', JSON.stringify(trades));
+        
+        localStorage.setItem('fkm_v23_trades', JSON.stringify(trades));
         document.getElementById('j-pnl').value = "";
-        document.querySelectorAll('.t-check').forEach(c => c.checked = false);
+        document.querySelectorAll('#tab-checklist input[type="checkbox"]').forEach(c => c.checked = false);
         renderTrades();
     }
 
     function renderTrades() {
-        const trades = JSON.parse(localStorage.getItem('fkm_trades_v22') || '[]');
-        const capInit = parseFloat(localStorage.getItem('fkm_init_v22') || 100);
-        const targetDay = parseFloat(localStorage.getItem('fkm_target_v22') || 20);
+        const trades = JSON.parse(localStorage.getItem('fkm_v23_trades') || '[]');
+        const capInit = parseFloat(localStorage.getItem('fkm_v23_init') || 100);
+        const targetDay = parseFloat(localStorage.getItem('fkm_v23_target') || 20);
+        
         document.getElementById('mm-balance-init').value = capInit;
         document.getElementById('mm-target-day').value = targetDay;
+        
         const body = document.getElementById('journal-body');
         const now = new Date();
-        let stats = { day: 0, week: 0, month: 0, year: 0, totalPnl: 0 };
         const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-        const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay()).getTime();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-        const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();
+        
+        let stats = { day: 0, totalPnl: 0, wins: 0, losses: 0, bes: 0, totalGains: 0, totalLosses: 0 };
 
         body.innerHTML = trades.slice().reverse().map((t, i) => {
             stats.totalPnl += t.pnl;
             if (t.timestamp >= startOfDay) stats.day += t.pnl;
-            if (t.timestamp >= startOfWeek) stats.week += t.pnl;
-            if (t.timestamp >= startOfMonth) stats.month += t.pnl;
-            if (t.timestamp >= startOfYear) stats.year += t.pnl;
-            const pClass = t.pnl > 0 ? 'val-gain' : (t.pnl < 0 ? 'val-perte' : '');
             
+            // Calcul des métriques Pro
+            if (t.pnl > 0) { stats.wins++; stats.totalGains += t.pnl; }
+            else if (t.pnl < 0) { stats.losses++; stats.totalLosses += Math.abs(t.pnl); }
+            else { stats.bes++; }
+
+            const pClass = t.pnl > 0 ? 'val-gain' : (t.pnl < 0 ? 'val-perte' : '');
             return `<tr>
-                <td>${t.timeStr}<br><span style="font-size:9px;color:var(--text-dim)">${t.dateStr}</span></td>
+                <td>${t.timeStr}</td>
                 <td><b>${t.market}</b></td>
                 <td class="${pClass}">${t.res}</td>
-                <td class="${pClass}">${t.pnl.toFixed(2)} $</td>
+                <td class="${pClass}">${t.pnl.toFixed(2)}$</td>
                 <td>${t.note}</td>
-                <td><button onclick="delT(${trades.length - 1 - i})" style="color:red;background:none;border:none;">X</button></td>
+                <td><button onclick="delT(${trades.length - 1 - i})" style="color:var(--red);background:none;border:none;padding:0;font-weight:bold;cursor:pointer;">X</button></td>
             </tr>`;
         }).join('');
 
+        // AFFICHAGE COMPACT DU MOTEUR STATISTIQUE AVANCÉ
+        const totalTrades = stats.wins + stats.losses + stats.bes;
+        const winRate = totalTrades > 0 ? ((stats.wins / totalTrades) * 100).toFixed(1) : "0.0";
+        const profitFactor = stats.totalLosses > 0 ? (stats.totalGains / stats.totalLosses).toFixed(2) : (stats.totalGains > 0 ? stats.totalGains.toFixed(2) : "-");
+
+        document.getElementById('stat-total-trades').innerText = totalTrades;
+        document.getElementById('stat-winrate').innerText = `${winRate}%`;
+        document.getElementById('stat-profit-factor').innerText = profitFactor;
+        document.getElementById('stat-w-be-l').innerText = `${stats.wins} / ${stats.bes} / ${stats.losses}`;
+
+        // Mise à jour de l'état financier
         const curBal = capInit + stats.totalPnl;
         const riskVal = (curBal * (document.getElementById('mm-risk-percent').value / 100)).toFixed(2);
         
@@ -749,48 +810,99 @@
 
         const targetStatus = document.getElementById('target-remaining');
         const cardDay = document.getElementById('card-day');
+        const btnSubmit = document.getElementById('btn-submit-trade');
+
         if (stats.day >= targetDay && targetDay > 0) {
             cardDay.classList.add('target-reached');
             targetStatus.innerText = "🏆 OBJECTIF ATTEINT !";
             targetStatus.style.color = "var(--gold)";
+            if(btnSubmit) btnSubmit.style.background = "#242b32"; 
         } else {
             cardDay.classList.remove('target-reached');
-            const remaining = targetDay - stats.day;
-            targetStatus.innerText = "Reste : " + remaining.toFixed(2) + " $";
+            targetStatus.innerText = "Reste : " + (targetDay - stats.day).toFixed(2) + " $";
             targetStatus.style.color = "var(--orange)";
+            if(btnSubmit) btnSubmit.style.background = "var(--green)";
         }
 
         const pTotal = ((stats.totalPnl / capInit) * 100).toFixed(1);
         const pnlTotalPerc = document.getElementById('pnl-total-perc');
         pnlTotalPerc.innerText = (pTotal > 0 ? "+" : "") + pTotal + "%";
-        pnlTotalPerc.style.color = pTotal >= 0 ? "#00ff00" : "#ff0000";
+        pnlTotalPerc.style.color = pTotal >= 0 ? "var(--green)" : "var(--red)";
 
         const upd = (id, v) => {
             const e = document.getElementById(id);
             e.innerText = (v > 0 ? "+" : "") + v.toFixed(2) + " $";
-            e.style.color = v > 0 ? "#00ff00" : (v < 0 ? "#ff0000" : "white");
+            e.style.color = v > 0 ? "var(--green)" : (v < 0 ? "var(--red)" : "white");
         };
         upd('pnl-day', stats.day);
-        upd('pnl-week', stats.week);
-        upd('pnl-month', stats.month);
-        upd('pnl-year', stats.year);
         
-        calculateAtrLogic();
+        calculateAlgoLogic();
     }
 
     function delT(i) {
-        const t = JSON.parse(localStorage.getItem('fkm_trades_v22'));
+        const t = JSON.parse(localStorage.getItem('fkm_v23_trades'));
         t.splice(i, 1);
-        localStorage.setItem('fkm_trades_v22', JSON.stringify(t));
+        localStorage.setItem('fkm_v23_trades', JSON.stringify(t));
         renderTrades();
     }
 
     function clearStats() {
-        if (confirm("Effacer tout l'historique ?")) {
-            localStorage.removeItem('fkm_trades_v22');
+        if (confirm("Effacer tout l'historique local ?")) {
+            localStorage.removeItem('fkm_v23_trades');
             renderTrades();
         }
     }
+
+    // FONCTIONNALITÉ IMPORT/EXPORT PROFESSIONNELLE (ANTI-SAGE DE NAVIGATEUR)
+    function exportDataToJSON() {
+        const dataToExport = {
+            trades: JSON.parse(localStorage.getItem('fkm_v23_trades') || '[]'),
+            init: localStorage.getItem('fkm_v23_init') || '100',
+            target: localStorage.getItem('fkm_v23_target') || '20',
+            atr_db: JSON.parse(localStorage.getItem('fkm_v23_atr_db') || 'null')
+        };
+        
+        const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `fkm_algo_backup_${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function triggerImportInput() {
+        document.getElementById('import-file-input').click();
+    }
+
+    function importDataFromJSON(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (importedData.trades) localStorage.setItem('fkm_v23_trades', JSON.stringify(importedData.trades));
+                if (importedData.init) localStorage.setItem('fkm_v23_init', importedData.init);
+                if (importedData.target) localStorage.setItem('fkm_v23_target', importedData.target);
+                if (importedData.atr_db) {
+                    localStorage.setItem('fkm_v23_atr_db', JSON.stringify(importedData.atr_db));
+                    MTF_ATR_DATABASE = importedData.atr_db;
+                }
+                
+                alert("Restauration du terminal effectuée avec succès !");
+                renderTrades();
+                updateAssetDefaultAtr();
+            } catch (err) {
+                alert("Erreur lors de la lecture du fichier : format JSON invalide.");
+            }
+        };
+        reader.readAsText(file);
+    }
+
     window.onload = function() {
         renderTrades();
         updateAssetDefaultAtr();
