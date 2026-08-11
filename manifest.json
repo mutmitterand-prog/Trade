@@ -1,6 +1,6 @@
 {
-  "name": "FKM ENERGY Terminal",
-  "short_name": "FKM Terminal",
+  "name": "MUTMITT STRATÉGIE",
+  "short_name": "MUTMITT STRATÉGIE",
   "description": "Terminal de trading et calcul de lotage pour scalping M1",
   "start_url": "index.html?v=23",
   "display": "standalone",
