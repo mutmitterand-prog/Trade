@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fkm-energy-v23'; // Mis à jour en v23 pour forcer le rafraîchissement
+const CACHE_NAME = 'mutmitt-stratégie'; // Mis à jour en v23 pour forcer le rafraîchissement
 const ASSETS = [
   'index.html',
   'manifest.json'
