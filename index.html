@@ -197,6 +197,64 @@
         .btn-action:hover { background: var(--input-bg); border-color: var(--orange); }
         .btn-danger { background: rgba(235, 87, 87, 0.1); color: var(--red); border-color: rgba(235, 87, 87, 0.3); }
         .btn-danger:hover { background: var(--red); color: white; }
+        
+        /* =========================================================
+   ⚡ BOUTONS RAPIDES SCALPING
+   ========================================================= */
+
+.quick-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 7px;
+    margin-bottom: 8px;
+}
+
+.quick-btn {
+    padding: 9px 5px;
+    border: 1px solid var(--border-color, #333);
+    border-radius: 6px;
+    background: var(--card-bg, #111);
+    color: var(--text-main, #fff);
+    cursor: pointer;
+    font-size: 0.68rem;
+    font-weight: bold;
+    transition: 0.15s;
+}
+
+.quick-btn small {
+    font-size: 0.55rem;
+    opacity: 0.7;
+}
+
+.quick-btn:hover {
+    transform: translateY(-1px);
+}
+
+.quick-btn.selected {
+    border: 2px solid #00ffff;
+    box-shadow: 0 0 8px rgba(0,255,255,0.5);
+    transform: scale(1.02);
+}
+
+.quick-btn.buy.selected {
+    border-color: var(--green, #00ff66);
+}
+
+.quick-btn.sell.selected {
+    border-color: var(--red, #ff3333);
+}
+
+.quick-btn.neutral.selected {
+    border-color: var(--orange, #ffaa00);
+}
+
+@media (max-width: 600px) {
+
+    .quick-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
     </style>
 </head>
 <body>
@@ -244,11 +302,12 @@
     </div>
 
     <div class="navigation-menu">
-        <button class="nav-tab active" onclick="switchMenu('tab-terminal', this)">⚡ Terminal</button>
-        <button class="nav-tab" onclick="switchMenu('tab-mm', this)">⚙️ Paramètres</button>
-        <button class="nav-tab" onclick="switchMenu('tab-checklist', this)">📋 Check-lists</button>
-        <button class="nav-tab" onclick="switchMenu('tab-journal', this)">📓 Journal</button>
-    </div>
+    <button class="nav-tab active" onclick="switchMenu('tab-terminal', this)">⚡ Terminal</button>
+    <button class="nav-tab" onclick="switchMenu('tab-mm', this)">⚙️ Paramètres</button>
+    <button class="nav-tab" onclick="switchMenu('tab-checklist', this)">📋 Check-lists</button>
+    <button class="nav-tab" onclick="switchMenu('tab-journal', this)">📓 Journal</button>
+    <button class="nav-tab" onclick="switchMenu('tab-strategy', this)">📖 Stratégie</button>
+</div>
 
     <div id="tab-terminal" class="menu-content active">
         <div class="card">
@@ -270,68 +329,349 @@
                 </select>
             </div>
 
-            <div class="box-title" style="margin-top: 15px;">📊 Saisie des Données ATR Live</div>
-            <div class="grid-3-col">
-                <div class="form-group">
-                    <label>ATR M1</label>
-                    <input type="number" id="live-atr" value="0.45" step="0.001" oninput="calculateAlgoLogic()">
-                </div>
-                <div class="form-group">
-                    <label>ATR M15</label>
-                    <input type="number" id="live-atr-m15" value="1.80" step="0.001" oninput="calculateAlgoLogic()">
-                </div>
-                <div class="form-group">
-                    <label>ATR H1</label>
-                    <input type="number" id="live-atr-h1" value="3.50" step="0.001" oninput="calculateAlgoLogic()">
-                </div>
-            </div>
-            <div class="grid-3-col" style="font-size: 0.6rem; color: var(--text-dim); text-align: center; margin-bottom: 10px;">
-                <div id="ref-m1">Norm: 0.5</div>
-                <div id="ref-m15">Norm: 1.8</div>
-                <div id="ref-h1">Norm: 3.5</div>
-            </div>
-
-            <div class="box-title" style="margin-top: 10px;">📈 Indicateurs MT5 Android (6 Données)</div>
             
-            <div class="grid-3-col">
-                <div class="form-group">
-                    <label style="color:#00ffff;">Prix Actuel</label>
-                    <input type="number" id="live-price" value="300.00" step="0.01" oninput="calculateAlgoLogic()">
-                </div>
 
-                <div class="form-group">
-                    <label style="color:#00ffff;">Kijun</label>
-                    <input type="number" id="live-kijun" value="299.55" step="0.01" oninput="calculateAlgoLogic()">
-                </div>
+            <!-- =========================================================
+     ⚡ SCALPING RAPIDE — ICHIMOKU + ADX + STOCHASTIC + ATR
+     ========================================================= -->
 
-                <div class="form-group">
-                    <label style="color:#00ffff;">ADX</label>
-                    <input type="number" id="live-adx" value="28" step="1" oninput="calculateAlgoLogic()">
-                </div>
-            </div>
+<div class="box-title" style="margin-top:15px;">
+    ⚡ SCALPING RAPIDE — CONFLUENCE M1 / M15 / H1
+</div>
 
-            <div class="diagnostic-grid">
-                <div class="diag-item">
-                    <div class="stat-label">Fonds HTF (>0.75)</div>
-                    <div id="f-htf-status" class="diag-val">-</div>
-                </div>
-                <div class="diag-item">
-                    <div class="stat-label">Puissance Flux (ADX)</div>
-                    <div id="f-adx-status" class="diag-val">-</div>
-                </div>
-                <div class="diag-item">
-                    <div class="stat-label">Acheteurs (Prix > Kijun)</div>
-                    <div id="f-algo-buy" class="diag-val">-</div>
-                </div>
-                <div class="diag-item">
-                    <div class="stat-label">Vendeurs (Prix &lt; Kijun)</div>
-                    <div id="f-algo-sell" class="diag-val">-</div>
-                </div>
-                <div class="diag-item" style="grid-column: span 2;">
-                    <div class="stat-label">Filtre Espace de Respiration (Kijun)</div>
-                    <div id="f-distance-status" class="diag-val">-</div>
-                </div>
-            </div>
+<div style="font-size:0.65rem;color:var(--text-dim);margin-bottom:12px;">
+    Sélectionne uniquement la situation observée sur MT5.
+    Les valeurs exactes ne sont pas obligatoires.
+</div>
+
+
+<!-- =========================
+     M1 — DÉCLENCHEUR
+     ========================= -->
+
+<div class="box-title" style="color:var(--orange);margin-top:10px;">
+    ⚡ M1 — DÉCLENCHEMENT
+</div>
+
+<div class="quick-grid">
+
+    <button class="quick-btn buy"
+            id="quick-m1-buy"
+            onclick="setQuickSignal('m1','buy')">
+        🟢 M1 BUY<br>
+        <small>Tenkan &gt; Kijun</small>
+    </button>
+
+    <button class="quick-btn sell"
+            id="quick-m1-sell"
+            onclick="setQuickSignal('m1','sell')">
+        🔴 M1 SELL<br>
+        <small>Tenkan &lt; Kijun</small>
+    </button>
+
+    <button class="quick-btn neutral"
+            id="quick-m1-neutral"
+            onclick="setQuickSignal('m1','neutral')">
+        ⚪ M1 NEUTRE
+    </button>
+
+</div>
+
+
+<!-- =========================
+     STOCHASTIC
+     ========================= -->
+
+<div class="box-title" style="margin-top:12px;">
+    📊 STOCHASTIC M1
+</div>
+
+<div class="quick-grid">
+
+    <button class="quick-btn"
+            onclick="setQuickSignal('stoch','oversold')">
+        🟢 SURVENTE<br>
+        <small>&lt; 20</small>
+    </button>
+
+    <button class="quick-btn"
+            onclick="setQuickSignal('stoch','neutral')">
+        ⚪ ZONE NEUTRE<br>
+        <small>20–80</small>
+    </button>
+
+    <button class="quick-btn"
+            onclick="setQuickSignal('stoch','overbought')">
+        🔴 SURACHAT<br>
+        <small>&gt; 80</small>
+    </button>
+
+</div>
+
+
+<!-- =========================
+     ADX
+     ========================= -->
+
+<div class="box-title" style="margin-top:12px;">
+    🔥 ADX M1 — FORCE DU MOUVEMENT
+</div>
+
+<div class="quick-grid">
+
+    <button class="quick-btn"
+            onclick="setQuickSignal('adx','weak')">
+        ⚪ FAIBLE<br>
+        <small>&lt; 20</small>
+    </button>
+
+    <button class="quick-btn"
+            onclick="setQuickSignal('adx','moderate')">
+        🟡 MODÉRÉ<br>
+        <small>20–25</small>
+    </button>
+
+    <button class="quick-btn"
+            onclick="setQuickSignal('adx','strong')">
+        🟢 FORT<br>
+        <small>25–30</small>
+    </button>
+
+    <button class="quick-btn"
+            onclick="setQuickSignal('adx','verystrong')">
+        🔥 TRÈS FORT<br>
+        <small>&gt; 30</small>
+    </button>
+
+</div>
+
+
+<!-- =========================
+     M15 — CONTEXTE
+     ========================= -->
+
+<div class="box-title" style="color:var(--blue);margin-top:15px;">
+    🔵 M15 — CONTEXTE
+</div>
+
+<div class="quick-grid">
+
+    <button class="quick-btn buy"
+            onclick="setQuickSignal('m15','buy')">
+        🟢 HAUSSIER<br>
+        <small>Tenkan &gt; Kijun</small>
+    </button>
+
+    <button class="quick-btn sell"
+            onclick="setQuickSignal('m15','sell')">
+        🔴 BAISSIER<br>
+        <small>Tenkan &lt; Kijun</small>
+    </button>
+
+    <button class="quick-btn neutral"
+            onclick="setQuickSignal('m15','neutral')">
+        ⚪ NEUTRE
+    </button>
+
+</div>
+
+
+<!-- =========================
+     NUAGE M15
+     ========================= -->
+
+<div class="box-title" style="margin-top:12px;">
+    ☁️ NUAGE M15
+</div>
+
+<div class="quick-grid">
+
+    <button class="quick-btn buy"
+            onclick="setQuickSignal('cloud','above')">
+        🟢 AU-DESSUS
+    </button>
+
+    <button class="quick-btn sell"
+            onclick="setQuickSignal('cloud','below')">
+        🔴 EN-DESSOUS
+    </button>
+
+    <button class="quick-btn neutral"
+            onclick="setQuickSignal('cloud','inside')">
+        ⚪ DANS LE NUAGE
+    </button>
+
+</div>
+
+
+<!-- =========================
+     H1 — CONTEXTE SUPÉRIEUR
+     ========================= -->
+
+<div class="box-title" style="color:var(--gold);margin-top:15px;">
+    🟡 H1 — CONTEXTE SUPÉRIEUR
+</div>
+
+<div class="quick-grid">
+
+    <button class="quick-btn buy"
+            onclick="setQuickSignal('h1','buy')">
+        🟢 HAUSSIER<br>
+        <small>Tenkan &gt; Kijun</small>
+    </button>
+
+    <button class="quick-btn sell"
+            onclick="setQuickSignal('h1','sell')">
+        🔴 BAISSIER<br>
+        <small>Tenkan &lt; Kijun</small>
+    </button>
+
+    <button class="quick-btn neutral"
+            onclick="setQuickSignal('h1','neutral')">
+        ⚪ NEUTRE
+    </button>
+
+</div>
+
+
+<!-- =========================
+     ATR — VOLATILITÉ
+     ========================= -->
+
+<div class="box-title" style="margin-top:15px;">
+    📈 ATR — VOLATILITÉ
+</div>
+
+<div class="quick-grid">
+
+    <button class="quick-btn"
+            onclick="setQuickSignal('atr','low')">
+        💤 FAIBLE
+    </button>
+
+    <button class="quick-btn"
+            onclick="setQuickSignal('atr','normal')">
+        🟢 NORMALE
+    </button>
+
+    <button class="quick-btn"
+            onclick="setQuickSignal('atr','high')">
+        🔥 FORTE
+    </button>
+
+</div>
+
+
+<!-- =========================
+     RÉSUMÉ
+     ========================= -->
+
+<div class="box-title" style="margin-top:15px;">
+    🎯 ANALYSE RAPIDE
+</div>
+
+<div class="diagnostic-grid">
+
+    <div class="diag-item">
+        <div class="stat-label">Signal M1</div>
+        <div id="quick-status-m1" class="diag-val">-</div>
+    </div>
+
+    <div class="diag-item">
+        <div class="stat-label">Stochastic</div>
+        <div id="quick-status-stoch" class="diag-val">-</div>
+    </div>
+
+    <div class="diag-item">
+        <div class="stat-label">ADX</div>
+        <div id="quick-status-adx" class="diag-val">-</div>
+    </div>
+
+    <div class="diag-item">
+        <div class="stat-label">M15</div>
+        <div id="quick-status-m15" class="diag-val">-</div>
+    </div>
+
+    <div class="diag-item">
+        <div class="stat-label">Nuage</div>
+        <div id="quick-status-cloud" class="diag-val">-</div>
+    </div>
+
+    <div class="diag-item">
+        <div class="stat-label">H1</div>
+        <div id="quick-status-h1" class="diag-val">-</div>
+    </div>
+
+    <div class="diag-item">
+        <div class="stat-label">ATR</div>
+        <div id="quick-status-atr" class="diag-val">-</div>
+    </div>
+
+    <div class="diag-item" style="grid-column:span 2;">
+        <div class="stat-label">DÉCISION</div>
+        <div id="quick-decision" class="diag-val">
+            EN ATTENTE
+        </div>
+    </div>
+
+</div>
+
+
+<!-- =========================
+     DIAGNOSTIC DE LA STRATÉGIE
+     ========================= -->
+<div class="box-title" style="margin-top: 15px;">
+    🔎 DIAGNOSTIC DE CONFLUENCE
+</div>
+
+<div class="diagnostic-grid">
+
+    <div class="diag-item">
+        <div class="stat-label">Contexte M15</div>
+        <div id="f-m15-status" class="diag-val">-</div>
+    </div>
+
+    <div class="diag-item">
+        <div class="stat-label">Contexte H1</div>
+        <div id="f-h1-status" class="diag-val">-</div>
+    </div>
+
+    <div class="diag-item">
+        <div class="stat-label">Croisement M1</div>
+        <div id="f-cross-m1-status" class="diag-val">-</div>
+    </div>
+
+    <div class="diag-item">
+        <div class="stat-label">Stochastic M1</div>
+        <div id="f-stoch-status" class="diag-val">-</div>
+    </div>
+
+    <div class="diag-item">
+        <div class="stat-label">ADX M1</div>
+        <div id="f-adx-status" class="diag-val">-</div>
+    </div>
+
+    <div class="diag-item">
+        <div class="stat-label">ATR / Volatilité</div>
+        <div id="f-htf-status" class="diag-val">-</div>
+    </div>
+
+    <div class="diag-item">
+        <div class="stat-label">Signal BUY</div>
+        <div id="f-algo-buy" class="diag-val">-</div>
+    </div>
+
+    <div class="diag-item">
+        <div class="stat-label">Signal SELL</div>
+        <div id="f-algo-sell" class="diag-val">-</div>
+    </div>
+
+    <div class="diag-item" style="grid-column: span 2;">
+        <div class="stat-label">Position du Prix par rapport aux Nuages</div>
+        <div id="f-cloud-status" class="diag-val">-</div>
+    </div>
+
+</div>
         </div>
     </div>
 
@@ -435,10 +775,17 @@
         </div>
     </div>
 
+    <!-- ========================= -->
+    <!-- JOURNAL -->
+    <!-- ========================= -->
+
     <div id="tab-journal" class="menu-content">
         <div class="card">
+
             <div class="box-title">📓 Enregistrer un Trade</div>
+
             <div class="journal-form">
+
                 <select id="j-market">
                     <option value="V10">V10</option>
                     <option value="V10 (1s)">V10 (1s)</option>
@@ -453,23 +800,38 @@
                     <option value="Boom 1000">Boom 1000</option>
                     <option value="Crash 1000">Crash 1000</option>
                 </select>
+
                 <select id="j-result">
                     <option value="Gain">Gain (TP)</option>
                     <option value="Perte">Perte (SL)</option>
                     <option value="BE">Breakeven</option>
                 </select>
-                <input type="number" id="j-pnl" placeholder="P&L ($) ex: 8.50">
+
+                <input
+                    type="number"
+                    id="j-pnl"
+                    placeholder="P&L ($) ex: 8.50"
+                >
+
                 <select id="j-note">
                     <option value="Confluence Totale">Confluence Totale</option>
                     <option value="Rejet Kijun">Rejet Kijun</option>
                     <option value="Impulsion ADX">Impulsion ADX</option>
                     <option value="Sortie Impatience">Sortie Impatience</option>
                 </select>
-                <button id="btn-submit-trade" onclick="addTrade()">VALIDER LE TRADE</button>
+
+                <button
+                    id="btn-submit-trade"
+                    onclick="addTrade()"
+                >
+                    VALIDER LE TRADE
+                </button>
+
             </div>
 
             <div class="table-wrapper">
                 <table>
+
                     <thead>
                         <tr>
                             <th>Heure</th>
@@ -480,13 +842,645 @@
                             <th></th>
                         </tr>
                     </thead>
+
                     <tbody id="journal-body"></tbody>
+
                 </table>
             </div>
-            <button onclick="clearStats()" class="btn-action btn-danger" style="margin-top: 10px; padding: 6px; font-size: 0.6rem; width: auto; border-radius: 4px;">Effacer l'historique local</button>
+
+            <button
+                onclick="clearStats()"
+                class="btn-action btn-danger"
+                style="
+                    margin-top:10px;
+                    padding:6px;
+                    font-size:0.6rem;
+                    width:auto;
+                    border-radius:4px;
+                "
+            >
+                Effacer l'historique local
+            </button>
+
         </div>
     </div>
-</div>
+
+
+    <!-- ========================= -->
+    <!-- STRATÉGIE -->
+    <!-- ========================= -->
+
+    <div id="tab-strategy" class="menu-content">
+
+        <!-- INTRODUCTION -->
+
+        <div class="card">
+
+            <div class="box-title" style="color:var(--orange);">
+                🎯 STRATÉGIE FKM ENERGY
+            </div>
+
+            <p style="
+                font-size:0.75rem;
+                line-height:1.6;
+                color:var(--text-main);
+            ">
+                La stratégie FKM ENERGY est une stratégie de
+                <b>scalping</b> dont l'exécution principale se fait
+                sur <b>M1</b>.
+            </p>
+
+            <div style="
+                background:var(--input-bg);
+                border-left:3px solid var(--orange);
+                padding:10px;
+                border-radius:5px;
+                font-size:0.7rem;
+                line-height:1.6;
+            ">
+
+                <b>Principe :</b><br>
+
+                Les unités supérieures donnent le contexte.
+                <br>
+                M15 et H1 permettent d'évaluer la structure.
+                <br>
+                M1 recherche le déclenchement.
+                <br>
+                Les indicateurs ont chacun un rôle précis.
+
+            </div>
+
+        </div>
+
+
+        <!-- ========================= -->
+        <!-- ICHIMOKU -->
+        <!-- ========================= -->
+
+        <div class="card">
+
+            <div class="box-title" style="color:var(--gold);">
+                ☁️ ICHIMOKU
+            </div>
+
+            <p style="
+                font-size:0.72rem;
+                line-height:1.6;
+            ">
+                Ichimoku permet d'analyser la structure du marché,
+                sa direction et les zones de support/résistance
+                dynamiques.
+            </p>
+
+            <div class="diagnostic-grid">
+
+                <div class="diag-item">
+
+                    <div class="stat-label">
+                        Tenkan &gt; Kijun
+                    </div>
+
+                    <div
+                        class="diag-val"
+                        style="color:var(--green);"
+                    >
+                        🟢 Biais haussier
+                    </div>
+
+                </div>
+
+
+                <div class="diag-item">
+
+                    <div class="stat-label">
+                        Tenkan &lt; Kijun
+                    </div>
+
+                    <div
+                        class="diag-val"
+                        style="color:var(--red);"
+                    >
+                        🔴 Biais baissier
+                    </div>
+
+                </div>
+
+
+                <div class="diag-item">
+
+                    <div class="stat-label">
+                        Prix &gt; Nuage
+                    </div>
+
+                    <div
+                        class="diag-val"
+                        style="color:var(--green);"
+                    >
+                        🟢 Environnement haussier
+                    </div>
+
+                </div>
+
+
+                <div class="diag-item">
+
+                    <div class="stat-label">
+                        Prix &lt; Nuage
+                    </div>
+
+                    <div
+                        class="diag-val"
+                        style="color:var(--red);"
+                    >
+                        🔴 Environnement baissier
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="diag-item"
+                    style="grid-column:span 2;"
+                >
+
+                    <div class="stat-label">
+                        Prix dans le Nuage
+                    </div>
+
+                    <div
+                        class="diag-val"
+                        style="color:var(--orange);"
+                    >
+                        ⚠️ Zone d'incertitude
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div style="
+                margin-top:10px;
+                padding:9px;
+                background:var(--input-bg);
+                border-radius:5px;
+                font-size:0.7rem;
+                line-height:1.6;
+            ">
+
+                <b>Rôle dans la stratégie :</b>
+
+                <br><br>
+
+                <b>H1</b> → contexte général
+
+                <br>
+
+                <b>M15</b> → confirmation du contexte
+
+                <br>
+
+                <b>M1</b> → déclenchement du mouvement
+
+            </div>
+
+        </div>
+
+
+        <!-- ========================= -->
+        <!-- ADX -->
+        <!-- ========================= -->
+
+        <div class="card">
+
+            <div class="box-title" style="color:var(--blue);">
+                📈 ADX — FORCE DU MOUVEMENT
+            </div>
+
+            <p style="
+                font-size:0.72rem;
+                line-height:1.6;
+            ">
+                L'ADX mesure principalement la
+                <b>force du mouvement</b>.
+                Il ne donne pas à lui seul la direction BUY ou SELL.
+            </p>
+
+
+            <div style="
+                background:var(--input-bg);
+                padding:10px;
+                border-radius:5px;
+                font-size:0.7rem;
+                line-height:1.8;
+            ">
+
+                <b>&lt; 20</b>
+                → marché faible / bruit
+
+                <br>
+
+                <b>20 – 25</b>
+                → force modérée / prudence
+
+                <br>
+
+                <b>≥ 25</b>
+                → mouvement exploitable
+
+                <br>
+
+                <b>&gt; 30</b>
+                → mouvement plus puissant
+
+            </div>
+
+
+            <div style="
+                margin-top:10px;
+                font-size:0.68rem;
+                color:var(--text-dim);
+            ">
+
+                ⚠️ Un ADX élevé ne signifie pas automatiquement
+                BUY ou SELL.
+
+                <br>
+
+                La direction vient principalement
+                de la structure Ichimoku.
+
+            </div>
+
+        </div>
+
+
+        <!-- ========================= -->
+        <!-- STOCHASTIC -->
+        <!-- ========================= -->
+
+        <div class="card">
+
+            <div class="box-title" style="color:var(--green);">
+                📊 STOCHASTIC — TIMING
+            </div>
+
+            <p style="
+                font-size:0.72rem;
+                line-height:1.6;
+            ">
+
+                Le Stochastic est utilisé principalement pour
+                rechercher un meilleur
+                <b>moment d'entrée sur M1</b>.
+
+            </p>
+
+
+            <div class="diagnostic-grid">
+
+                <div class="diag-item">
+
+                    <div class="stat-label">
+                        Zone basse
+                    </div>
+
+                    <div class="diag-val">
+                        &lt; 20
+                    </div>
+
+                </div>
+
+
+                <div class="diag-item">
+
+                    <div class="stat-label">
+                        Zone haute
+                    </div>
+
+                    <div class="diag-val">
+                        &gt; 80
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div style="
+                margin-top:10px;
+                background:var(--input-bg);
+                padding:9px;
+                border-radius:5px;
+                font-size:0.7rem;
+                line-height:1.6;
+            ">
+
+                <b>BUY :</b>
+                rechercher une reprise depuis une zone basse.
+
+                <br>
+
+                <b>SELL :</b>
+                rechercher un retournement depuis une zone haute.
+
+            </div>
+
+
+            <div style="
+                margin-top:8px;
+                font-size:0.68rem;
+                color:var(--text-dim);
+            ">
+
+                ⚠️ Surachat ≠ SELL automatique.
+
+                <br>
+
+                ⚠️ Survente ≠ BUY automatique.
+
+            </div>
+
+        </div>
+
+
+        <!-- ========================= -->
+        <!-- ATR -->
+        <!-- ========================= -->
+
+        <div class="card">
+
+            <div class="box-title" style="color:var(--orange);">
+                📏 ATR — VOLATILITÉ
+            </div>
+
+            <p style="
+                font-size:0.72rem;
+                line-height:1.6;
+            ">
+
+                L'ATR mesure l'amplitude moyenne
+                des mouvements.
+
+                <br><br>
+
+                Il permet notamment d'évaluer si le marché
+                possède suffisamment de volatilité
+                pour le scalping.
+
+            </p>
+
+
+            <div style="
+                background:var(--input-bg);
+                padding:10px;
+                border-radius:5px;
+                font-size:0.7rem;
+                line-height:1.7;
+            ">
+
+                <b>ATR faible</b>
+                → marché peu actif / risque de bruit
+
+                <br>
+
+                <b>ATR en expansion</b>
+                → mouvement qui gagne en amplitude
+
+                <br>
+
+                <b>ATR élevé</b>
+                → marché plus volatile
+
+            </div>
+
+        </div>
+
+
+        <!-- ========================= -->
+        <!-- ARCHITECTURE -->
+        <!-- ========================= -->
+
+        <div class="card">
+
+            <div class="box-title" style="color:var(--gold);">
+                🧠 ARCHITECTURE DE LA STRATÉGIE
+            </div>
+
+
+            <div style="
+                background:var(--input-bg);
+                padding:12px;
+                border-radius:6px;
+                text-align:center;
+                font-size:0.72rem;
+                line-height:2;
+            ">
+
+                <b style="color:var(--gold);">
+                    H1
+                </b>
+
+                <br>
+
+                ☁️ Ichimoku
+                → Direction générale
+
+                <br>
+                ↓
+                <br>
+
+                <b style="color:var(--gold);">
+                    M15
+                </b>
+
+                <br>
+
+                ☁️ Ichimoku
+                + 📈 ADX
+                → Confirmation
+
+                <br>
+                ↓
+                <br>
+
+                <b style="color:var(--gold);">
+                    M1
+                </b>
+
+                <br>
+
+                ☁️ Tenkan/Kijun
+                → Déclenchement
+
+                <br>
+
+                📊 Stochastic
+                → Timing
+
+                <br>
+
+                📈 ADX
+                → Force
+
+                <br>
+
+                📏 ATR
+                → Volatilité
+
+            </div>
+
+        </div>
+
+
+        <!-- ========================= -->
+        <!-- SCÉNARIO BUY -->
+        <!-- ========================= -->
+
+        <div
+            class="card"
+            style="border-left:4px solid var(--green);"
+        >
+
+            <div
+                class="box-title"
+                style="color:var(--green);"
+            >
+                🟢 SCÉNARIO BUY
+            </div>
+
+
+            <div style="
+                font-size:0.72rem;
+                line-height:1.8;
+            ">
+
+                1️⃣ H1 : contexte favorable
+
+                <br>
+
+                2️⃣ M15 : structure favorable
+
+                <br>
+
+                3️⃣ M1 : Tenkan croise Kijun vers le haut
+
+                <br>
+
+                4️⃣ ADX : force suffisante
+
+                <br>
+
+                5️⃣ Stochastic : timing favorable
+
+                <br>
+
+                6️⃣ ATR : volatilité exploitable
+
+            </div>
+
+        </div>
+
+
+        <!-- ========================= -->
+        <!-- SCÉNARIO SELL -->
+        <!-- ========================= -->
+
+        <div
+            class="card"
+            style="border-left:4px solid var(--red);"
+        >
+
+            <div
+                class="box-title"
+                style="color:var(--red);"
+            >
+                🔴 SCÉNARIO SELL
+            </div>
+
+
+            <div style="
+                font-size:0.72rem;
+                line-height:1.8;
+            ">
+
+                1️⃣ H1 : contexte favorable
+
+                <br>
+
+                2️⃣ M15 : structure favorable
+
+                <br>
+
+                3️⃣ M1 : Tenkan croise Kijun vers le bas
+
+                <br>
+
+                4️⃣ ADX : force suffisante
+
+                <br>
+
+                5️⃣ Stochastic : timing favorable
+
+                <br>
+
+                6️⃣ ATR : volatilité exploitable
+
+            </div>
+
+        </div>
+
+
+        <!-- ========================= -->
+        <!-- NO TRADE -->
+        <!-- ========================= -->
+
+        <div
+            class="card"
+            style="border-left:4px solid var(--red);"
+        >
+
+            <div
+                class="box-title"
+                style="color:var(--red);"
+            >
+                🛑 QUAND NE PAS TRADER
+            </div>
+
+
+            <div style="
+                font-size:0.72rem;
+                line-height:1.8;
+            ">
+
+                • Prix coincé dans le nuage
+
+                <br>
+
+                • ADX trop faible
+
+                <br>
+
+                • ATR trop faible
+
+                <br>
+
+                • Structure H1/M15 fortement contradictoire
+
+                <br>
+
+                • Croisements Tenkan/Kijun répétés dans les deux sens
+
+                <br>
+
+                • Absence de confirmation du mouvement M1
+
+            </div>
+
+        </div>
+
+    </div>
 
 <script>
     const DEFAULT_ATR_DATABASE = {
@@ -578,142 +1572,1180 @@
 
         calculateAlgoLogic();
     }
+    
+    // ============================================================
+// ⚡ SYSTÈME DE SIGNAUX RAPIDES — SCALPING M1
+// Ichimoku + ADX + Stochastic + ATR
+// ============================================================
+
+const quickSignals = {
+    m1: null,
+    stoch: null,
+    adx: null,
+    m15: null,
+    cloud: null,
+    h1: null,
+    atr: null
+};
+
+
+// ------------------------------------------------------------
+// Sélection d'un bouton
+// ------------------------------------------------------------
+
+function setQuickSignal(type, value) {
+
+    quickSignals[type] = value;
+
+    // Tous les boutons correspondant à cette catégorie
+    // sont remis à leur état normal
+    const categoryButtons = document.querySelectorAll(
+        `[onclick^="setQuickSignal('${type}'"]`
+    );
+
+    categoryButtons.forEach(btn => {
+        btn.classList.remove('selected');
+    });
+
+    // Trouver le bouton actuellement sélectionné
+    categoryButtons.forEach(btn => {
+
+        const onclickValue = btn.getAttribute('onclick');
+
+        if (onclickValue &&
+            onclickValue.includes(`'${value}'`)) {
+
+            btn.classList.add('selected');
+        }
+    });
+
+    updateQuickDisplay();
+    calculateQuickConfluence();
+}
+
+
+// ------------------------------------------------------------
+// Affichage du statut
+// ------------------------------------------------------------
+
+function updateQuickDisplay() {
+
+    const labels = {
+
+        m1: {
+            buy: "🟢 BUY — Tenkan > Kijun",
+            sell: "🔴 SELL — Tenkan < Kijun",
+            neutral: "⚪ M1 NEUTRE"
+        },
+
+        stoch: {
+            oversold: "🟢 SURVENTE",
+            neutral: "⚪ ZONE NEUTRE",
+            overbought: "🔴 SURACHAT"
+        },
+
+        adx: {
+            weak: "⚪ FAIBLE (<20)",
+            moderate: "🟡 MODÉRÉ (20–25)",
+            strong: "🟢 FORT (25–30)",
+            verystrong: "🔥 TRÈS FORT (>30)"
+        },
+
+        m15: {
+            buy: "🟢 HAUSSIER",
+            sell: "🔴 BAISSIER",
+            neutral: "⚪ NEUTRE"
+        },
+
+        cloud: {
+            above: "🟢 AU-DESSUS DU NUAGE",
+            below: "🔴 SOUS LE NUAGE",
+            inside: "⚪ DANS LE NUAGE"
+        },
+
+        h1: {
+            buy: "🟢 HAUSSIER",
+            sell: "🔴 BAISSIER",
+            neutral: "⚪ NEUTRE"
+        },
+
+        atr: {
+            low: "💤 FAIBLE",
+            normal: "🟢 NORMALE",
+            high: "🔥 FORTE"
+        }
+    };
+
+    Object.keys(quickSignals).forEach(type => {
+
+        const element =
+            document.getElementById(`quick-status-${type}`);
+
+        if (!element) return;
+
+        const value = quickSignals[type];
+
+        element.innerText =
+            value && labels[type][value]
+                ? labels[type][value]
+                : "-";
+    });
+}
+
+
+// ============================================================
+// 🎯 CALCUL DE LA CONFLUENCE
+// ============================================================
+
+function calculateQuickConfluence() {
+
+    const {
+        m1,
+        stoch,
+        adx,
+        m15,
+        cloud,
+        h1,
+        atr
+    } = quickSignals;
+
+    const decision = document.getElementById('quick-decision');
+
+    if (!decision) return;
+
+
+    // ========================================================
+    // ÉTAPE 1 — LE M1 EST OBLIGATOIRE
+    // ========================================================
+
+    if (!m1 || m1 === "neutral") {
+
+        decision.innerText = "⏳ ATTENTE — SIGNAL M1 NON CONFIRMÉ";
+        decision.style.color = "var(--orange)";
+
+        return;
+    }
+
+
+    // ========================================================
+    // SCORE SÉPARÉ BUY / SELL
+    // ========================================================
+
+    let buyScore = 0;
+    let sellScore = 0;
+
+
+    // ========================================================
+    // 1️⃣ M1 — DÉCLENCHEUR PRINCIPAL
+    // ========================================================
+
+    if (m1 === "buy") {
+        buyScore += 30;
+    }
+
+    if (m1 === "sell") {
+        sellScore += 30;
+    }
+
+
+    // ========================================================
+    // 2️⃣ M15 — CONTEXTE PRINCIPAL
+    // ========================================================
+
+    if (m15 === "buy") {
+        buyScore += 20;
+    }
+
+    else if (m15 === "sell") {
+        sellScore += 20;
+    }
+
+
+    // ========================================================
+    // 3️⃣ H1 — CONTEXTE SUPÉRIEUR
+    // ========================================================
+
+    if (h1 === "buy") {
+        buyScore += 15;
+    }
+
+    else if (h1 === "sell") {
+        sellScore += 15;
+    }
+
+
+    // ========================================================
+    // 4️⃣ NUAGE — FILTRE STRUCTUREL
+    // ========================================================
+
+    if (cloud === "above") {
+
+        buyScore += 15;
+
+    }
+
+    else if (cloud === "below") {
+
+        sellScore += 15;
+
+    }
+
+    else if (cloud === "inside") {
+
+        // Être dans le nuage = zone d'incertitude.
+        buyScore -= 15;
+        sellScore -= 15;
+    }
+
+
+    // ========================================================
+    // 5️⃣ STOCHASTIC — MOMENTUM / ZONE D'ENTRÉE
+    // ========================================================
+
+    /*
+       BUY :
+       On privilégie une sortie de zone de survente.
+
+       SELL :
+       On privilégie une sortie de zone de surachat.
+
+       La zone neutre ne donne aucun bonus.
+    */
+
+    if (m1 === "buy" && stoch === "oversold") {
+
+        buyScore += 10;
+
+    }
+
+    else if (m1 === "sell" && stoch === "overbought") {
+
+        sellScore += 10;
+    }
+
+
+    // ========================================================
+    // 6️⃣ ADX — FORCE DU MOUVEMENT
+    // ========================================================
+
+    if (adx === "weak") {
+
+        // Pas assez de force pour du scalping.
+        buyScore -= 20;
+        sellScore -= 20;
+
+    }
+
+    else if (adx === "moderate") {
+
+        buyScore += 3;
+        sellScore += 3;
+
+    }
+
+    else if (adx === "strong") {
+
+        buyScore += 10;
+        sellScore += 10;
+
+    }
+
+    else if (adx === "verystrong") {
+
+        buyScore += 15;
+        sellScore += 15;
+    }
+
+
+    // ========================================================
+    // 7️⃣ ATR — VOLATILITÉ
+    // ========================================================
+
+    if (atr === "low") {
+
+        // Marché trop calme.
+        buyScore -= 15;
+        sellScore -= 15;
+
+    }
+
+    else if (atr === "normal") {
+
+        buyScore += 5;
+        sellScore += 5;
+
+    }
+
+    else if (atr === "high") {
+
+        buyScore += 10;
+        sellScore += 10;
+    }
+
+
+    // ========================================================
+    // LIMITATION DES SCORES
+    // ========================================================
+
+    buyScore = Math.max(0, Math.min(100, buyScore));
+    sellScore = Math.max(0, Math.min(100, sellScore));
+
+
+    // ========================================================
+    // DIRECTION DU M1
+    // ========================================================
+
+    let score;
+    let direction;
+
+
+    if (m1 === "buy") {
+
+        direction = "BUY";
+        score = buyScore;
+
+    } else {
+
+        direction = "SELL";
+        score = sellScore;
+    }
+
+
+    // ========================================================
+    // 🚨 FILTRE DE CONTRADICTION HTF
+    // ========================================================
+
+    /*
+       Exemple :
+
+       M1 BUY
+       M15 SELL
+       H1 SELL
+
+       Le scalpeur ne doit pas acheter simplement
+       parce que le croisement M1 existe.
+
+       On bloque donc lorsque M15 ET H1 sont
+       simultanément contre le M1.
+    */
+
+    const htfOppositionBuy =
+        m1 === "buy" &&
+        m15 === "sell" &&
+        h1 === "sell";
+
+    const htfOppositionSell =
+        m1 === "sell" &&
+        m15 === "buy" &&
+        h1 === "buy";
+
+
+    if (htfOppositionBuy || htfOppositionSell) {
+
+        decision.innerText =
+            "🛑 NO TRADE — M15 + H1 CONTRE LE M1";
+
+        decision.style.color = "var(--red)";
+
+        return;
+    }
+
+
+    // ========================================================
+    // ☁️ FILTRE NUAGE
+    // ========================================================
+
+    /*
+       Si M1 BUY mais prix sous le nuage :
+       on devient beaucoup plus prudent.
+
+       Si M1 SELL mais prix au-dessus du nuage :
+       même chose.
+    */
+
+    const cloudOppositionBuy =
+        m1 === "buy" &&
+        cloud === "below";
+
+    const cloudOppositionSell =
+        m1 === "sell" &&
+        cloud === "above";
+
+
+    if (cloudOppositionBuy || cloudOppositionSell) {
+
+        decision.innerText =
+            `🛑 NO TRADE — NUAGE CONTRE ${direction}`;
+
+        decision.style.color = "var(--red)";
+
+        return;
+    }
+
+
+    // ========================================================
+    // 🔥 ADX FAIBLE = PAS DE SCALPING
+    // ========================================================
+
+    if (adx === "weak") {
+
+        decision.innerText =
+            `🛑 NO TRADE — ADX TROP FAIBLE`;
+
+        decision.style.color = "var(--red)";
+
+        return;
+    }
+
+
+    // ========================================================
+    // 📈 ATR FAIBLE = PAS DE SCALPING
+    // ========================================================
+
+    if (atr === "low") {
+
+        decision.innerText =
+            `🛑 ATTENTE — VOLATILITÉ ATR TROP FAIBLE`;
+
+        decision.style.color = "var(--orange)";
+
+        return;
+    }
+
+
+    // ========================================================
+    // 🏆 CLASSIFICATION DU SIGNAL
+    // ========================================================
+
+    let grade = "";
+    let message = "";
+
+
+    // ========================================================
+    // GRADE A — CONFLUENCE FORTE
+    // ========================================================
+
+    if (score >= 80) {
+
+        grade = "A";
+        message = `🚀 ${direction} FORT`;
+
+        decision.style.color =
+            direction === "BUY"
+                ? "var(--green)"
+                : "var(--red)";
+    }
+
+
+    // ========================================================
+    // GRADE B — BON SIGNAL
+    // ========================================================
+
+    else if (score >= 65) {
+
+        grade = "B";
+        message = `👍 ${direction} POSSIBLE`;
+
+        decision.style.color = "var(--blue)";
+    }
+
+
+    // ========================================================
+    // GRADE C — TROP INCERTAIN
+    // ========================================================
+
+    else if (score >= 50) {
+
+        grade = "C";
+        message = `⚠️ ATTENTE — ${direction} FAIBLE`;
+
+        decision.style.color = "var(--orange)";
+    }
+
+
+    // ========================================================
+    // NO TRADE
+    // ========================================================
+
+    else {
+
+        grade = "D";
+        message = `🛑 NO TRADE`;
+        decision.style.color = "var(--red)";
+    }
+
+
+    // ========================================================
+    // AFFICHAGE FINAL
+    // ========================================================
+
+    decision.innerText =
+        `${message} — Grade ${grade} — Score ${score}/100`;
+
+}
+
+
+// ------------------------------------------------------------
+// Initialisation
+// ------------------------------------------------------------
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    updateQuickDisplay();
+    calculateQuickConfluence();
+
+});
 
     function calculateAlgoLogic() {
-        const selectedAsset = document.getElementById('atr-asset-select').value;
-        const db = MTF_ATR_DATABASE[selectedAsset];
 
-        const m1Live = parseFloat(document.getElementById('live-atr').value || 0);
-        const m15Live = parseFloat(document.getElementById('live-atr-m15').value || 0);
-        const h1Live = parseFloat(document.getElementById('live-atr-h1').value || 0);
+    // =========================================================
+    // 1. RÉCUPÉRATION DES DONNÉES
+    // =========================================================
 
-        const price = parseFloat(document.getElementById('live-price').value || 0);
-        const kijun = parseFloat(document.getElementById('live-kijun').value || 0);
-        const adx = parseInt(document.getElementById('live-adx').value || 0);
+    const selectedAsset = document.getElementById('atr-asset-select').value;
+    const db = MTF_ATR_DATABASE[selectedAsset] || {};
 
-        const fHtf = document.getElementById('f-htf-status');
-        const fAdx = document.getElementById('f-adx-status');
-        const fAlgoBuy = document.getElementById('f-algo-buy');
-        const fAlgoSell = document.getElementById('f-algo-sell');
-        const fDistance = document.getElementById('f-distance-status');
-        const fOvertrade = document.getElementById('f-overtrade-status');
-        const fScore = document.getElementById('f-score-badge');
+    // -------- M1 --------
+    const price = parseFloat(document.getElementById('live-price').value || 0);
+    const tenkanM1 = parseFloat(document.getElementById('live-tenkan-m1').value || 0);
+    const kijunM1 = parseFloat(document.getElementById('live-kijun').value || 0);
+    const stochM1 = parseFloat(document.getElementById('live-stoch-m1').value || 0);
+    const adx = parseFloat(document.getElementById('live-adx').value || 0);
+    const atrM1 = parseFloat(document.getElementById('live-atr').value || 0);
 
-        // PROTECTION BLOQUANTE ET CRITIQUE : PRIX PARFAITEMENT SUR KIJUN
-        if (price === kijun) {
-            fOvertrade.innerText = "⚠️ PRIX SUR KIJUN (INÉVALUABLE)";
-            fOvertrade.style.color = "var(--orange)";
-            fScore.innerText = "SCORE CONFLUENCE : 0/100";
-            fAlgoBuy.innerText = "❌ BLOCK"; fAlgoBuy.style.color = "var(--orange)";
-            fAlgoSell.innerText = "❌ BLOCK"; fAlgoSell.style.color = "var(--orange)";
-            return;
-        }
+    // -------- M15 --------
+    const tenkanM15 = parseFloat(document.getElementById('live-tenkan-m15').value || 0);
+    const kijunM15 = parseFloat(document.getElementById('live-kijun-m15').value || 0);
+    const senkouAM15 = parseFloat(document.getElementById('live-senkou-a-m15').value || 0);
+    const senkouBM15 = parseFloat(document.getElementById('live-senkou-b-m15').value || 0);
+    const atrM15 = parseFloat(document.getElementById('live-atr-m15').value || 0);
 
-        // VERROUILLAGE SÉCURITÉ : VÉRIFICATION DU RETOUR D'OBJECTIF DE SESSION JOURNALIER
-        const trades = JSON.parse(localStorage.getItem('fkm_v23_trades') || '[]');
-        const targetDay = parseFloat(localStorage.getItem('fkm_v23_target') || 20);
-        const now = new Date();
-        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-        let dayPnl = 0;
-        trades.forEach(t => { if(t.timestamp >= startOfDay) dayPnl += t.pnl; });
+    // -------- H1 --------
+    const tenkanH1 = parseFloat(document.getElementById('live-tenkan-h1').value || 0);
+    const kijunH1 = parseFloat(document.getElementById('live-kijun-h1').value || 0);
+    const atrH1 = parseFloat(document.getElementById('live-atr-h1').value || 0);
 
-        if (dayPnl >= targetDay && targetDay > 0) {
-            fOvertrade.innerText = "🏆 SESSION TERMINÉE (OBJECTIF ATTEINT)";
-            fOvertrade.style.color = "var(--gold)";
-            fScore.innerText = "PROTECTION DU CAPITAL ACTIVE";
-            return;
-        }
 
-        let score = 0;
+    // =========================================================
+    // 2. RÉCUPÉRATION DES ÉLÉMENTS VISUELS
+    // =========================================================
 
-        // 1. Analyse Volatilité Fonds HTF
-        const ratioM15 = m15Live / db.m15;
-        const ratioH1 = h1Live / db.h1;
-        let htfValid = ratioM15 >= 0.75 && ratioH1 >= 0.75;
+    const fHtf = document.getElementById('f-htf-status');
+    const fAdx = document.getElementById('f-adx-status');
+    const fAlgoBuy = document.getElementById('f-algo-buy');
+    const fAlgoSell = document.getElementById('f-algo-sell');
+    const fDistance = document.getElementById('f-distance-status');
+    const fOvertrade = document.getElementById('f-overtrade-status');
+    const fScore = document.getElementById('f-score-badge');
 
-        if (htfValid) {
-            score += 30;
-            fHtf.innerText = "✅ VOLATILITÉ ROBUSTE"; fHtf.style.color = "var(--green)";
-        } else {
-            fHtf.innerText = "🚨 COMPRESSION HTF"; fHtf.style.color = "var(--red)";
-        }
 
-        // 2. Filtre d'Espace de Respiration Kijun
-        const distanceKijun = Math.abs(price - kijun);
-        const dynamicCoeff = db.coeff || 0.5; 
-        const minDistance = m1Live * dynamicCoeff;
-        let distanceValid = distanceKijun >= minDistance;
+    // =========================================================
+    // 3. SÉCURITÉ : DONNÉES INCOMPLÈTES
+    // =========================================================
 
-        if (distanceValid) {
-            score += 20;
-            fDistance.innerText = `Dist: ${distanceKijun.toFixed(2)} >= Seuil [${dynamicCoeff}xATR]: ${minDistance.toFixed(2)} (OK)`;
-            fDistance.style.color = "var(--green)";
-        } else {
-            fDistance.innerText = `Dist: ${distanceKijun.toFixed(2)} < Seuil [${dynamicCoeff}xATR]: ${minDistance.toFixed(2)} (Bruit/Collé)`;
-            fDistance.style.color = "var(--orange)";
-        }
+    const valeurs = [
+        price,
+        tenkanM1,
+        kijunM1,
+        stochM1,
+        adx,
+        atrM1,
+        tenkanM15,
+        kijunM15,
+        senkouAM15,
+        senkouBM15,
+        atrM15,
+        tenkanH1,
+        kijunH1,
+        atrH1
+    ];
 
-        // 3. Force de la Tendance ADX
-        let adxValid = adx >= 25;
-        let adxStrong = adx > 30;
-        let adxHyperFlux = adx > 35;
+    if (valeurs.some(v => !Number.isFinite(v) || v <= 0)) {
 
-        if (!adxValid) {
-            fAdx.innerText = "📉 BRUIT / NO TREND (<25)"; fAdx.style.color = "var(--red)";
-        } else if (adxValid && !adxStrong) {
-            score += 15;
-            fAdx.innerText = "⚡ FLUX MODÉRÉ (25-30)"; fAdx.style.color = "var(--blue)";
-        } else {
-            score += 30;
-            fAdx.innerText = adxHyperFlux ? "🔥 HYPER-FLUX (>35)" : "🔥 TENDANCE FORTE (>30)";
-            fAdx.style.color = "var(--green)";
-        }
+        fScore.innerText = "SCORE CONFLUENCE : —";
 
-        // 4. Alignement Structural Univoque
-        let buyDirectionOk = price > kijun;
-        let sellDirectionOk = price < kijun;
+        fOvertrade.innerText = "⚠️ DONNÉES INCOMPLÈTES";
+        fOvertrade.style.color = "var(--orange)";
 
-        if (buyDirectionOk) {
-            score += 20;
-            fAlgoBuy.innerText = "🟢 ACCORD HAUSSIER"; fAlgoBuy.style.color = "var(--green)";
-            fAlgoSell.innerText = "❌ INVALIDE"; fAlgoSell.style.color = "var(--red)";
-        } else if (sellDirectionOk) {
-            score += 20;
-            fAlgoSell.innerText = "🔴 ACCORD BAISSIER"; fAlgoSell.style.color = "var(--green)";
-            fAlgoBuy.innerText = "❌ INVALIDE"; fAlgoBuy.style.color = "var(--red)";
-        }
-
-        // 5. Ratio de TP Dynamique selon la puissance
-        let tpMultiplier = adxHyperFlux ? 4 : 3;
-        document.getElementById('buy-tp-mode').innerText = adxHyperFlux ? " (ADX+ : TP étendu 1:2)" : "";
-        document.getElementById('sell-tp-mode').innerText = adxHyperFlux ? " (ADX+ : TP étendu 1:2)" : "";
-
-        document.getElementById('calc-buy-sl').innerText = (price - (2 * m1Live)).toFixed(2);
-        document.getElementById('calc-buy-tp').innerText = (price + (tpMultiplier * m1Live)).toFixed(2);
-        document.getElementById('calc-sell-sl').innerText = (price + (2 * m1Live)).toFixed(2);
-        document.getElementById('calc-sell-tp').innerText = (price - (tpMultiplier * m1Live)).toFixed(2);
-
-        fScore.innerText = `SCORE CONFLUENCE : ${score}/100`;
-
-        if (score >= 80) {
-            fOvertrade.innerText = buyDirectionOk ? `🚀 ACHAT FORT (Grade A : ${score}%)` : `💥 VENTE FORTE (Grade A : ${score}%)`;
-            fOvertrade.style.color = score >= 80 && buyDirectionOk ? "var(--green)" : "var(--red)";
-        } else if (score >= 70 && score < 80) {
-            fOvertrade.innerText = buyDirectionOk ? `👍 ACHAT MODÉRÉ (Grade B : ${score}%)` : `👎 VENTE MODÉRÉE (Grade B : ${score}%)`;
-            fOvertrade.style.color = buyDirectionOk ? "var(--blue)" : "var(--orange)";
-        } else {
-            fOvertrade.innerText = `🛑 NO TRADE (Score ${score}% < Seuil Requis 70%)`;
-            fOvertrade.style.color = "var(--red)";
-        }
-        
-        // Mise à jour rapide des indicateurs textuels des check-lists
-        document.getElementById('chk-buy-htf-atr').innerText = htfValid ? "✅ DU FLUX" : "❌ SANS VOLA";
-        document.getElementById('chk-sell-htf-atr').innerText = htfValid ? "✅ DU FLUX" : "❌ SANS VOLA";
-        document.getElementById('chk-buy-kijun').innerText = buyDirectionOk ? "✅ VALIDÉ" : "❌ CONTRE-TREND";
-        document.getElementById('chk-sell-kijun').innerText = sellDirectionOk ? "✅ VALIDÉ" : "❌ CONTRE-TREND";
-        document.getElementById('chk-buy-adx').innerText = adx >= 25 ? `✅ CONFIRMÉ (${adx})` : `❌ BRUIT (${adx})`;
-        document.getElementById('chk-sell-adx').innerText = adx >= 25 ? `✅ CONFIRMÉ (${adx})` : `❌ BRUIT (${adx})`;
+        return;
     }
+
+
+    // =========================================================
+    // 4. PROTECTION OBJECTIF JOURNALIER
+    // =========================================================
+
+    const trades = JSON.parse(
+        localStorage.getItem('fkm_v23_trades') || '[]'
+    );
+
+    const targetDay = parseFloat(
+        localStorage.getItem('fkm_v23_target') || 20
+    );
+
+    const now = new Date();
+
+    const startOfDay = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+    ).getTime();
+
+    let dayPnl = 0;
+
+    trades.forEach(t => {
+
+        if (t.timestamp >= startOfDay) {
+            dayPnl += parseFloat(t.pnl || 0);
+        }
+
+    });
+
+    if (dayPnl >= targetDay && targetDay > 0) {
+
+        fOvertrade.innerText =
+            "🏆 SESSION TERMINÉE — OBJECTIF ATTEINT";
+
+        fOvertrade.style.color = "var(--gold)";
+
+        fScore.innerText =
+            "PROTECTION DU CAPITAL ACTIVE";
+
+        fAlgoBuy.innerText = "🔒 BLOQUÉ";
+        fAlgoSell.innerText = "🔒 BLOQUÉ";
+
+        return;
+    }
+
+
+    // =========================================================
+    // 5. ICHIMOKU — M1
+    // =========================================================
+
+    const m1BullishCross = tenkanM1 > kijunM1;
+    const m1BearishCross = tenkanM1 < kijunM1;
+
+    const priceAboveKijunM1 = price > kijunM1;
+    const priceBelowKijunM1 = price < kijunM1;
+
+
+    // =========================================================
+    // 6. ICHIMOKU — M15
+    // =========================================================
+
+    const m15Bullish = tenkanM15 > kijunM15;
+    const m15Bearish = tenkanM15 < kijunM15;
+
+    const cloudTop = Math.max(senkouAM15, senkouBM15);
+    const cloudBottom = Math.min(senkouAM15, senkouBM15);
+
+    const priceAboveCloudM15 = price > cloudTop;
+    const priceBelowCloudM15 = price < cloudBottom;
+
+    const priceInsideCloudM15 =
+        price >= cloudBottom &&
+        price <= cloudTop;
+
+
+    // =========================================================
+    // 7. ICHIMOKU — H1
+    // =========================================================
+
+    const h1Bullish = tenkanH1 > kijunH1;
+    const h1Bearish = tenkanH1 < kijunH1;
+
+
+    // =========================================================
+    // 8. ADX
+    // =========================================================
+
+    const adxNoTrend = adx < 20;
+    const adxWeak = adx >= 20 && adx < 25;
+    const adxValid = adx >= 25;
+    const adxStrong = adx >= 30;
+
+
+    // =========================================================
+    // 9. STOCHASTIC
+    // =========================================================
+
+    /*
+       Pour le BUY :
+       zone intéressante = 20 à 80
+       particulièrement intéressante lorsque le Stochastic
+       sort de la zone basse.
+
+       Pour le SELL :
+       zone intéressante = 20 à 80
+       particulièrement intéressante lorsqu'il sort de la
+       zone haute.
+
+       Ici nous ne bloquons pas automatiquement un trade
+       uniquement parce que Stochastic est >80 ou <20.
+       Il sert principalement au timing.
+    */
+
+    const stochBuy =
+        stochM1 >= 20 &&
+        stochM1 <= 80;
+
+    const stochSell =
+        stochM1 >= 20 &&
+        stochM1 <= 80;
+
+
+    // =========================================================
+    // 10. ATR — VOLATILITÉ
+    // =========================================================
+
+    const normM1 = db.m1 || 0.5;
+    const normM15 = db.m15 || 1.8;
+    const normH1 = db.h1 || 3.5;
+
+    const ratioM1 = atrM1 / normM1;
+    const ratioM15 = atrM15 / normM15;
+    const ratioH1 = atrH1 / normH1;
+
+    /*
+       On ne demande pas que les ATR soient exactement
+       égaux aux normes.
+
+       On cherche simplement à éviter une compression
+       excessive.
+    */
+
+    const atrM1Valid = ratioM1 >= 0.70;
+    const atrM15Valid = ratioM15 >= 0.70;
+    const atrH1Valid = ratioH1 >= 0.70;
+
+    const atrEnvironmentValid =
+        atrM15Valid &&
+        atrH1Valid;
+
+
+    // =========================================================
+    // 11. DISTANCE DE RESPIRATION PAR RAPPORT À LA KIJUN
+    // =========================================================
+
+    const distanceKijun = Math.abs(price - kijunM1);
+
+    const dynamicCoeff = db.coeff || 0.5;
+
+    const minDistance =
+        atrM1 * dynamicCoeff;
+
+    const distanceValid =
+        distanceKijun >= minDistance;
+
+
+    // =========================================================
+    // 12. SCORE BUY
+    // =========================================================
+
+    let buyScore = 0;
+
+    // M1 Tenkan > Kijun
+    if (m1BullishCross) {
+        buyScore += 20;
+    }
+
+    // Prix > Kijun M1
+    if (priceAboveKijunM1) {
+        buyScore += 10;
+    }
+
+    // M15 Tenkan > Kijun
+    if (m15Bullish) {
+        buyScore += 15;
+    }
+
+    // Prix au-dessus du nuage M15
+    if (priceAboveCloudM15) {
+        buyScore += 15;
+    }
+
+    // H1 haussier
+    if (h1Bullish) {
+        buyScore += 15;
+    }
+
+    // ADX
+    if (adxValid) {
+        buyScore += 10;
+    }
+
+    if (adxStrong) {
+        buyScore += 5;
+    }
+
+    // Stochastic
+    if (stochBuy) {
+        buyScore += 5;
+    }
+
+    // ATR
+    if (atrEnvironmentValid && atrM1Valid) {
+        buyScore += 5;
+    }
+
+
+    // =========================================================
+    // 13. SCORE SELL
+    // =========================================================
+
+    let sellScore = 0;
+
+    // M1 Tenkan < Kijun
+    if (m1BearishCross) {
+        sellScore += 20;
+    }
+
+    // Prix < Kijun M1
+    if (priceBelowKijunM1) {
+        sellScore += 10;
+    }
+
+    // M15 Tenkan < Kijun
+    if (m15Bearish) {
+        sellScore += 15;
+    }
+
+    // Prix sous le nuage M15
+    if (priceBelowCloudM15) {
+        sellScore += 15;
+    }
+
+    // H1 baissier
+    if (h1Bearish) {
+        sellScore += 15;
+    }
+
+    // ADX
+    if (adxValid) {
+        sellScore += 10;
+    }
+
+    if (adxStrong) {
+        sellScore += 5;
+    }
+
+    // Stochastic
+    if (stochSell) {
+        sellScore += 5;
+    }
+
+    // ATR
+    if (atrEnvironmentValid && atrM1Valid) {
+        sellScore += 5;
+    }
+
+
+    // =========================================================
+    // 14. FILTRE ADX — PAS DE TRADE SOUS 20
+    // =========================================================
+
+    if (adxNoTrend) {
+
+        buyScore = 0;
+        sellScore = 0;
+
+        fAdx.innerText =
+            `❌ MARCHÉ SANS TENDANCE (${adx.toFixed(0)})`;
+
+        fAdx.style.color = "var(--red)";
+
+    } else if (adxWeak) {
+
+        fAdx.innerText =
+            `⚠️ ADX FAIBLE (${adx.toFixed(0)})`;
+
+        fAdx.style.color = "var(--orange)";
+
+    } else if (adxStrong) {
+
+        fAdx.innerText =
+            `🔥 ADX FORT (${adx.toFixed(0)})`;
+
+        fAdx.style.color = "var(--green)";
+
+    } else {
+
+        fAdx.innerText =
+            `⚡ ADX VALIDE (${adx.toFixed(0)})`;
+
+        fAdx.style.color = "var(--blue)";
+    }
+
+
+    // =========================================================
+    // 15. AFFICHAGE CONTEXTE HTF
+    // =========================================================
+
+    if (h1Bullish && m15Bullish) {
+
+        fHtf.innerText =
+            "🟢 H1 + M15 HAUSSIERS";
+
+        fHtf.style.color = "var(--green)";
+
+    } else if (h1Bearish && m15Bearish) {
+
+        fHtf.innerText =
+            "🔴 H1 + M15 BAISSIERS";
+
+        fHtf.style.color = "var(--red)";
+
+    } else {
+
+        fHtf.innerText =
+            "⚠️ H1 / M15 DIVERGENTS";
+
+        fHtf.style.color = "var(--orange)";
+    }
+
+
+    // =========================================================
+    // 16. AFFICHAGE BUY / SELL
+    // =========================================================
+
+    if (m1BullishCross) {
+
+        fAlgoBuy.innerText =
+            `🟢 CROISEMENT BUY — ${buyScore}/100`;
+
+        fAlgoBuy.style.color = "var(--green)";
+
+    } else {
+
+        fAlgoBuy.innerText =
+            "❌ PAS DE CROISEMENT BUY";
+
+        fAlgoBuy.style.color = "var(--red)";
+    }
+
+
+    if (m1BearishCross) {
+
+        fAlgoSell.innerText =
+            `🔴 CROISEMENT SELL — ${sellScore}/100`;
+
+        fAlgoSell.style.color = "var(--red)";
+
+    } else {
+
+        fAlgoSell.innerText =
+            "❌ PAS DE CROISEMENT SELL";
+
+        fAlgoSell.style.color = "var(--red)";
+    }
+
+
+    // =========================================================
+    // 17. FILTRE DISTANCE KIJUN
+    // =========================================================
+
+    if (distanceValid) {
+
+        fDistance.innerText =
+            `✅ Distance Kijun : ${distanceKijun.toFixed(2)} ≥ ${minDistance.toFixed(2)}`;
+
+        fDistance.style.color = "var(--green)";
+
+    } else {
+
+        fDistance.innerText =
+            `⚠️ Trop proche Kijun : ${distanceKijun.toFixed(2)} < ${minDistance.toFixed(2)}`;
+
+        fDistance.style.color = "var(--orange)";
+    }
+
+
+    // =========================================================
+    // 18. SCORE FINAL
+    // =========================================================
+
+    const finalScore =
+        Math.max(buyScore, sellScore);
+
+    fScore.innerText =
+        `SCORE CONFLUENCE : ${finalScore}/100`;
+
+
+    // =========================================================
+    // 19. DÉCISION FINALE
+    // =========================================================
+
+    /*
+       IMPORTANT :
+
+       On ne déclenche pas uniquement avec un score.
+
+       Le M1 doit réellement donner le signal.
+    */
+
+    let decision = "NO TRADE";
+    let decisionColor = "var(--red)";
+
+    const buyReady =
+        m1BullishCross &&
+        adxValid &&
+        atrM1Valid &&
+        distanceValid &&
+        buyScore >= 70;
+
+    const sellReady =
+        m1BearishCross &&
+        adxValid &&
+        atrM1Valid &&
+        distanceValid &&
+        sellScore >= 70;
+
+
+    if (buyReady && buyScore > sellScore) {
+
+        decision =
+            `🚀 ACHAT POSSIBLE — ${buyScore}/100`;
+
+        decisionColor =
+            "var(--green)";
+
+    } else if (sellReady && sellScore > buyScore) {
+
+        decision =
+            `💥 VENTE POSSIBLE — ${sellScore}/100`;
+
+        decisionColor =
+            "var(--red)";
+
+    } else if (priceInsideCloudM15) {
+
+        decision =
+            "🛑 NO TRADE — PRIX DANS LE NUAGE";
+
+        decisionColor =
+            "var(--orange)";
+
+    } else if (!distanceValid) {
+
+        decision =
+            "🛑 NO TRADE — TROP PROCHE KIJUN";
+
+        decisionColor =
+            "var(--orange)";
+
+    } else {
+
+        decision =
+            `🛑 NO TRADE — BUY ${buyScore} / SELL ${sellScore}`;
+
+        decisionColor =
+            "var(--red)";
+    }
+
+
+    fOvertrade.innerText = decision;
+    fOvertrade.style.color = decisionColor;
+
+
+    // =========================================================
+    // 20. CALCUL SL / TP AVEC ATR M1
+    // =========================================================
+
+    const slDistance =
+        2 * atrM1;
+
+    let tpMultiplier = 3;
+
+    if (adxStrong) {
+        tpMultiplier = 4;
+    }
+
+    // BUY
+    document.getElementById('calc-buy-sl').innerText =
+        (price - slDistance).toFixed(2);
+
+    document.getElementById('calc-buy-tp').innerText =
+        (price + (tpMultiplier * atrM1)).toFixed(2);
+
+    // SELL
+    document.getElementById('calc-sell-sl').innerText =
+        (price + slDistance).toFixed(2);
+
+    document.getElementById('calc-sell-tp').innerText =
+        (price - (tpMultiplier * atrM1)).toFixed(2);
+
+
+    // =========================================================
+    // 21. MISE À JOUR DES CHECKLISTS
+    // =========================================================
+
+    const chkBuyHtf =
+        document.getElementById('chk-buy-htf-atr');
+
+    const chkSellHtf =
+        document.getElementById('chk-sell-htf-atr');
+
+    const chkBuyKijun =
+        document.getElementById('chk-buy-kijun');
+
+    const chkSellKijun =
+        document.getElementById('chk-sell-kijun');
+
+    const chkBuyAdx =
+        document.getElementById('chk-buy-adx');
+
+    const chkSellAdx =
+        document.getElementById('chk-sell-adx');
+
+
+    if (chkBuyHtf) {
+
+        chkBuyHtf.innerText =
+            h1Bullish && m15Bullish
+                ? "✅ H1 + M15 HAUSSIERS"
+                : "⚠️ CONTEXTE NON ALIGNÉ";
+    }
+
+    if (chkSellHtf) {
+
+        chkSellHtf.innerText =
+            h1Bearish && m15Bearish
+                ? "✅ H1 + M15 BAISSIERS"
+                : "⚠️ CONTEXTE NON ALIGNÉ";
+    }
+
+    if (chkBuyKijun) {
+
+        chkBuyKijun.innerText =
+            m1BullishCross && priceAboveKijunM1
+                ? "✅ TENKAN > KIJUN"
+                : "❌ SIGNAL ABSENT";
+    }
+
+    if (chkSellKijun) {
+
+        chkSellKijun.innerText =
+            m1BearishCross && priceBelowKijunM1
+                ? "✅ TENKAN < KIJUN"
+                : "❌ SIGNAL ABSENT";
+    }
+
+    if (chkBuyAdx) {
+
+        chkBuyAdx.innerText =
+            adxValid
+                ? `✅ ADX ${adx.toFixed(0)}`
+                : `❌ ADX ${adx.toFixed(0)}`;
+    }
+
+    if (chkSellAdx) {
+
+        chkSellAdx.innerText =
+            adxValid
+                ? `✅ ADX ${adx.toFixed(0)}`
+                : `❌ ADX ${adx.toFixed(0)}`;
+    }
+}
 
     function saveData() {
         localStorage.setItem('fkm_v23_init', document.getElementById('mm-balance-init').value);
@@ -721,41 +2753,218 @@
     }
 
     function addTrade() {
-        const trades = JSON.parse(localStorage.getItem('fkm_v23_trades') || '[]');
-        const targetDay = parseFloat(localStorage.getItem('fkm_v23_target') || 20);
-        
-        // Blocage physique du bouton de validation si objectif atteint
-        const now = new Date();
-        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-        let dayPnl = 0;
-        trades.forEach(t => { if(t.timestamp >= startOfDay) dayPnl += t.pnl; });
+    const trades = JSON.parse(localStorage.getItem('fkm_v23_trades') || '[]');
+    const targetDay = parseFloat(localStorage.getItem('fkm_v23_target') || 20);
 
-        if (dayPnl >= targetDay && targetDay > 0) {
-            alert("Discipline FKM ENERGY : Objectif atteint. Enregistrement verrouillé !");
-            return;
+    // ==========================================
+    // 1. PROTECTION : OBJECTIF JOURNALIER ATTEINT
+    // ==========================================
+    const now = new Date();
+    const startOfDay = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+    ).getTime();
+
+    let dayPnl = 0;
+
+    trades.forEach(t => {
+        if (t.timestamp >= startOfDay) {
+            dayPnl += Number(t.pnl) || 0;
         }
+    });
 
-        const pnlInput = document.getElementById('j-pnl').value;
-        if(pnlInput === "") return;
-        
-        const pnl = parseFloat(pnlInput);
-        const res = document.getElementById('j-result').value;
-        
-        trades.push({
-            timestamp: now.getTime(),
-            dateStr: now.toLocaleDateString('fr-FR'),
-            timeStr: now.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}),
-            market: document.getElementById('j-market').value,
-            res: res,
-            pnl: res === 'Perte' ? -Math.abs(pnl) : (res === 'BE' ? 0.00 : Math.abs(pnl)), // CORRECTION : BE FAIT TRÈS STRICTEMENT 0.00 $
-            note: document.getElementById('j-note').value
-        });
-        
-        localStorage.setItem('fkm_v23_trades', JSON.stringify(trades));
-        document.getElementById('j-pnl').value = "";
-        document.querySelectorAll('#tab-checklist input[type="checkbox"]').forEach(c => c.checked = false);
-        renderTrades();
+    if (dayPnl >= targetDay && targetDay > 0) {
+        alert(
+            "Discipline FKM ENERGY : Objectif atteint.\n\n" +
+            "La session est terminée pour aujourd'hui."
+        );
+        return;
     }
+
+    // ==========================================
+    // 2. VÉRIFICATION DU P&L
+    // ==========================================
+    const pnlInput = document.getElementById('j-pnl').value;
+
+    if (pnlInput === "") {
+        alert("Veuillez saisir le P&L du trade.");
+        return;
+    }
+
+    const pnl = parseFloat(pnlInput);
+
+    if (!Number.isFinite(pnl)) {
+        alert("Le P&L saisi est invalide.");
+        return;
+    }
+
+    // ==========================================
+    // 3. RÉSULTAT DU TRADE
+    // ==========================================
+    const res = document.getElementById('j-result').value;
+
+    let finalPnl = 0;
+
+    if (res === "Perte") {
+        finalPnl = -Math.abs(pnl);
+    } else if (res === "BE") {
+        finalPnl = 0;
+    } else {
+        finalPnl = Math.abs(pnl);
+    }
+
+    // ==========================================
+    // 4. RÉCUPÉRATION DES DONNÉES DE LA STRATÉGIE
+    // ==========================================
+
+    const market = document.getElementById('j-market').value;
+    const note = document.getElementById('j-note').value;
+
+    /*
+     * Ces données sont récupérées si les éléments
+     * existent dans l'application.
+     *
+     * Cela permet d'ajouter progressivement
+     * Ichimoku + ADX + Stochastic + ATR sans
+     * casser l'ancien journal.
+     */
+
+    const getValue = (id) => {
+        const element = document.getElementById(id);
+        return element ? element.value : null;
+    };
+
+    const getText = (id) => {
+        const element = document.getElementById(id);
+        return element ? element.innerText : null;
+    };
+
+    // Données actuellement disponibles
+    const price = parseFloat(getValue("live-price"));
+    const kijun = parseFloat(getValue("live-kijun"));
+    const adx = parseFloat(getValue("live-adx"));
+
+    const atrM1 = parseFloat(getValue("live-atr"));
+    const atrM15 = parseFloat(getValue("live-atr-m15"));
+    const atrH1 = parseFloat(getValue("live-atr-h1"));
+
+    // ==========================================
+    // 5. DIRECTION DU TRADE
+    // ==========================================
+
+    let direction = "NON DEFINIE";
+
+    if (
+        Number.isFinite(price) &&
+        Number.isFinite(kijun)
+    ) {
+        if (price > kijun) {
+            direction = "BUY";
+        } else if (price < kijun) {
+            direction = "SELL";
+        }
+    }
+
+    // ==========================================
+    // 6. SCORE DE CONFLUENCE ACTUEL
+    // ==========================================
+
+    let score = null;
+
+    const scoreElement = document.getElementById('f-score-badge');
+
+    if (scoreElement) {
+        const scoreText = scoreElement.innerText;
+
+        const match = scoreText.match(/(\d+)\s*\/\s*100/);
+
+        if (match) {
+            score = parseInt(match[1]);
+        }
+    }
+
+    // ==========================================
+    // 7. ENREGISTREMENT DU TRADE
+    // ==========================================
+
+    trades.push({
+
+        // Identité temporelle
+        timestamp: now.getTime(),
+
+        dateStr: now.toLocaleDateString('fr-FR'),
+
+        timeStr: now.toLocaleTimeString('fr-FR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        }),
+
+        // Actif
+        market: market,
+
+        // Direction
+        direction: direction,
+
+        // Résultat
+        res: res,
+
+        // P&L
+        pnl: finalPnl,
+
+        // Note
+        note: note,
+
+        // ======================================
+        // DONNÉES DE MARCHÉ AU MOMENT DU TRADE
+        // ======================================
+
+        strategy: "Ichimoku + ADX + Stochastic + ATR",
+
+        price: Number.isFinite(price) ? price : null,
+
+        kijun: Number.isFinite(kijun) ? kijun : null,
+
+        adx: Number.isFinite(adx) ? adx : null,
+
+        atrM1: Number.isFinite(atrM1) ? atrM1 : null,
+
+        atrM15: Number.isFinite(atrM15) ? atrM15 : null,
+
+        atrH1: Number.isFinite(atrH1) ? atrH1 : null,
+
+        score: score
+
+    });
+
+    // ==========================================
+    // 8. SAUVEGARDE
+    // ==========================================
+
+    localStorage.setItem(
+        'fkm_v23_trades',
+        JSON.stringify(trades)
+    );
+
+    // ==========================================
+    // 9. NETTOYAGE DU FORMULAIRE
+    // ==========================================
+
+    document.getElementById('j-pnl').value = "";
+
+    // Décocher la checklist après le trade
+    document
+        .querySelectorAll('#tab-checklist input[type="checkbox"]')
+        .forEach(c => {
+            c.checked = false;
+        });
+
+    // ==========================================
+    // 10. RAFRAÎCHISSEMENT DU TERMINAL
+    // ==========================================
+
+    renderTrades();
+}
 
     function renderTrades() {
         const trades = JSON.parse(localStorage.getItem('fkm_v23_trades') || '[]');
@@ -909,4 +3118,4 @@
     };
 </script>
 </body>
-</html>
+            </html>
